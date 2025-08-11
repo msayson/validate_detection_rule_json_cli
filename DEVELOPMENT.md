@@ -15,4 +15,7 @@
 * `./target/debug/validate_json [OPTIONS]` runs the locally built executable with the given options, if it has been set up via `cargo build`
   * Eg. `./target/debug/validate_json --help` displays the CLI's help text
   * Eg. `./target/debug/validate_json some_file.json` runs the validator against the provided input file
+* `cargo run -- [OPTIONS]` builds the executable and runs it with the given options
+  * Eg. `cargo run -- --help` builds the package and displays the CLI's help text
+  * Eg. `cargo run -- some_file.json` builds the package and runs the validator against the provided input file
 
