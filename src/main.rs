@@ -6,6 +6,7 @@ const UNEXPECTED_ARGS_MSG: &str = "Received invalid arguments\n  'validate_json 
 const INVALID_OR_UNSAFE_PATH_MSG: &str = "Invalid or unsafe path";
 const DIR_FILEPATH_MSG: &str = "Must provide a file, not a directory";
 
+/// Prints usage instructions to stdout and exits the program.
 fn print_help_and_exit() -> ! {
     println!("Usage: validate_json FILE");
     println!("   or: validate_json --help");
@@ -17,6 +18,27 @@ fn print_help_and_exit() -> ! {
     std::process::exit(0);
 }
 
+/// Parses and validates the file path argument from CLI input.
+///
+/// Expects exactly one positional argument after the executable name:
+/// the path to the file to validate, or `--help`.
+///
+/// If `--help` is passed, it prints usage information and exits.
+/// Otherwise, validates the file path points to a file, not a directory,
+/// and returns the canonicalized file path.
+///
+/// # Arguments
+/// * `args` - A slice of command-line arguments
+///
+/// # Returns
+/// * `Ok(PathBuf)` - A canonicalized, validated file path; OR
+/// * `Err(&'static str)` - An error message describing the failure
+///
+/// # Errors
+/// Returns an error if:
+/// - The number of arguments is incorrect
+/// - The path is invalid or unsafe
+/// - The path points to a directory
 fn parse_filepath_from_args(args: &[String]) -> Result<PathBuf, &'static str> {
     // Validate provides required arguments
     if 2 != args.len() {
@@ -27,7 +49,7 @@ fn parse_filepath_from_args(args: &[String]) -> Result<PathBuf, &'static str> {
         print_help_and_exit();
     }
 
-    // Validate input filepath
+    // Validate a file exists at given filepath
     let canonical_filepath = match fs::canonicalize(first_input) {
         Ok(path) => path,
         Err(_) => return Err(INVALID_OR_UNSAFE_PATH_MSG)
@@ -38,14 +60,30 @@ fn parse_filepath_from_args(args: &[String]) -> Result<PathBuf, &'static str> {
     Ok(canonical_filepath)
 }
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
+/// Validates the file specified in CLI arguments.
+///
+/// Parses the file path and resulting file, and exits with an error message
+/// if parsing fails.
+///
+/// # Arguments
+/// * `args` - A slice of command-line arguments
+///
+/// # Behaviour
+/// - Prints usage instructions and exits with code `0` if `--help`
+///     is passed as the input argument
+/// - Exits with code `1` if argument or file parsing fails
+fn validate_file(args: &[String]) {
     let path_buf: PathBuf = parse_filepath_from_args(&args).unwrap_or_else(|err| {
         eprintln!("Problem parsing filepath: {err}");
         std::process::exit(1);
     });
     let path: &Path = path_buf.as_path();
     println!("Validating file at path {}", path.display());
+}
+
+fn main() {
+    let args: Vec<String> = env::args().collect();
+    validate_file(&args);
 }
 
 #[cfg(test)]
@@ -109,6 +147,30 @@ mod tests {
         assert!(result.is_ok());
         let returned_path = result.unwrap();
         assert_eq!(returned_path, input_file.path().canonicalize().unwrap());
+    }
+
+    #[test]
+    fn validate_file_rejects_nonexistent_file() {
+        let invalid_file_path: &str = "/not_real_dir/not_real_file.json";
+        let input_args = vec![
+            FIRST_ARG.to_string(),
+            invalid_file_path.to_string()
+        ];
+        let result = parse_filepath_from_args(&input_args);
+        assert!(matches!(result, Err(INVALID_OR_UNSAFE_PATH_MSG)));
+    }
+
+    #[test]
+    fn validate_file_passes_valid_file() {
+        let temp_dir = TempDir::new().unwrap();
+        let input_file = temp_dir.child("file.json");
+        input_file.touch().unwrap();
+
+        let input_args = vec![
+            FIRST_ARG.to_string(),
+            input_file.path().to_str().unwrap().to_string()
+        ];
+        validate_file(&input_args);
     }
 }
 
