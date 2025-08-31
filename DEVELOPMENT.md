@@ -18,4 +18,3 @@
 * `cargo run -- [OPTIONS]` builds the executable and runs it with the given options
   * Eg. `cargo run -- --help` builds the package and displays the CLI's help text
   * Eg. `cargo run -- some_file.json` builds the package and runs the validator against the provided input file
-
