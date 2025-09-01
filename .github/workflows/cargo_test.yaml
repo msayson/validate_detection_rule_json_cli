@@ -16,7 +16,7 @@ env:
 
 jobs:
   build_and_test:
-    name: Build and run unit tests on ${{ matrix.os }} with ${{ matrix.toolchain }} toolchain
+    name: Validate unit tests against ${{ matrix.os }} with stable toolchain
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -24,12 +24,17 @@ jobs:
           - macOS-latest
           - ubuntu-latest
           - windows-latest
-        toolchain:
-          - stable
-          - beta
     steps:
       - uses: actions/checkout@v4
-      - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - run: rustup update stable && rustup default stable
+      - run: cargo build --verbose
+      - run: cargo test --verbose
+  build_and_test_on_rust_beta:
+    name: Validate unit tests against beta Rust toolchain
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup update beta && rustup default beta
       - run: cargo build --verbose
       - run: cargo test --verbose
   lint:
