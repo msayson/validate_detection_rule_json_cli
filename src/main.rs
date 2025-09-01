@@ -62,6 +62,16 @@ mod tests {
     const FIRST_ARG: &str = "./validate_json";
 
     #[test]
+    fn detection_rule_schema_is_valid() {
+        let detection_rule_schema_json: serde_json::Value =
+            serde_json::from_str(DETECTION_RULE_SCHEMA)
+                .expect("Failed to parse detection rule schema as JSON");
+        let validation_result =
+            jsonschema::draft202012::meta::validate(&detection_rule_schema_json);
+        assert!(validation_result.is_ok());
+    }
+
+    #[test]
     fn validate_file_rejects_nonexistent_file() {
         let invalid_file_path: &str = "/not_real_dir/not_real_file.json";
         let input_args = vec![FIRST_ARG.to_string(), invalid_file_path.to_string()];

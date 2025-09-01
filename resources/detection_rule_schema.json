@@ -1,27 +1,155 @@
 {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
     "properties": {
         "id": {
-            "type": "string",
-            "description": "Unique identifier for the detection rule."
+            "description": "Unique identifier for the detection rule",
+            "type": "string"
         },
         "name": {
-            "type": "string",
-            "description": "Name of the detection rule."
+            "description": "Name of the detection rule",
+            "type": "string"
         },
         "description": {
-            "type": "string",
-            "description": "Description of the detection rule."
+            "description": "Description of the detection rule",
+            "type": "string"
         },
         "version": {
-            "type": "number",
-            "description": "Version of the detection rule."
+            "description": "Version of the detection rule",
+            "type": "number"
+        },
+        "steps": {
+            "description": "Sequence of steps to execute",
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/step"
+            },
+            "minItems": 1
         }
     },
     "required": [
         "id",
         "name",
-        "version"
+        "version",
+        "steps"
     ],
-    "additionalProperties": false
+    "additionalProperties": false,
+    "$defs": {
+        "step": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "Unique identifier for the step",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description of the step",
+                    "type": "string"
+                },
+                "requestType": {
+                    "description": "Whether the step is an API request or a CLI command",
+                    "type": "string",
+                    "enum": [
+                        "api",
+                        "cli"
+                    ]
+                },
+                "request": {
+                    "description": "The request definition",
+                    "type": "object"
+                }
+            },
+            "required": [
+                "id",
+                "requestType",
+                "request"
+            ],
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "requestType": {
+                                "const": "api"
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "request": {
+                                "$ref": "#/$defs/apiRequest"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "requestType": {
+                                "const": "cli"
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "request": {
+                                "$ref": "#/$defs/cliCommand"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "apiRequest": {
+            "description": "A user-defined API request",
+            "type": "object",
+            "properties": {
+                "method": {
+                    "type": "string",
+                    "enum": [
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE"
+                    ]
+                },
+                "url": {
+                    "type": "string"
+                },
+                "headers": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "body": {
+                    "type": "object",
+                    "additionalProperties": true
+                }
+            },
+            "required": [
+                "method",
+                "url"
+            ],
+            "additionalProperties": false
+        },
+        "cliCommand": {
+            "description": "A user-defined CLI command",
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "args": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": [
+                "command"
+            ],
+            "additionalProperties": false
+        }
+    }
 }
