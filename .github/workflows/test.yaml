@@ -1,13 +1,13 @@
-name: Cargo Build & Test
+name: Cargo Test
 
 on:
   # Run automatically when pushing code, test, or dependency changes
   push:
     paths:
+      - '.github/workflows/test.yaml'
       - 'Cargo.*'
       - '**.json'
       - '**.rs'
-      - '**.yaml'
   # Run automatically for all pull requests
   pull_request:
 
@@ -37,11 +37,3 @@ jobs:
       - run: rustup update beta && rustup default beta
       - run: cargo build --verbose
       - run: cargo test --verbose
-  lint:
-    name: Run cargo fmt check and clippy to enforce code style
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: rustup update stable && rustup default stable
-      - run: cargo fmt --all -- --check
-      - run: cargo clippy --all-targets -- -D warnings

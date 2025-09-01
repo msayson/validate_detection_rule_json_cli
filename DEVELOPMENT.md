@@ -8,6 +8,7 @@
 3. Run `rustc --version` to validate Rust has been successfully installed
 4. Run `cargo --version` to validate Cargo has been successfully installed
 5. Run `cargo install --no-default-features --force cargo-make` to install cargo-make with minimal features, to enable defining and running custom tasks such as chained cargo commands to simplify validations during development
+6. Run `cargo install cargo-audit --locked` to install cargo-audit, to enable auditing vulnerabilities in dependencies via `cargo audit`
 
 ### Building / testing the package locally
 
@@ -23,3 +24,4 @@
   * Eg. `cargo run -- some_file.json` builds the package and runs the validator against the provided input file
 * `cargo fmt` reformats code to enforce the [Rust Style Guide](https://doc.rust-lang.org/stable/style-guide/), with support for project configurations
 * `cargo fmt --all -- --check` evaluates whether there is any code violating the [Rust Style Guide](https://doc.rust-lang.org/stable/style-guide/), failing if there are style violations without automatically reformatting the code
+* `cargo audit` evaluates whether dependencies imported via Cargo have reported vulnerabilities

@@ -1,0 +1,33 @@
+name: Code Scan
+
+on:
+  # Run automatically when pushing code, test, or dependency changes
+  push:
+    paths:
+      - '.github/workflows/scan_code.yaml'
+      - 'Cargo.*'
+      - '**.json'
+      - '**.rs'
+  # Run automatically for all pull requests
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    name: Run cargo fmt check and clippy to enforce code style
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup update stable && rustup default stable
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --all-targets -- -D warnings
+  audit:
+    name: Run cargo audit to identify vulnerabilities in dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup update stable && rustup default stable
+      - run: cargo install cargo-audit --locked
+      - run: cargo audit
