@@ -1,0 +1,23 @@
+name: Audit
+
+on:
+  # Run automatically when pushing dependency changes
+  push:
+    paths:
+      - '.github/workflows/audit.yaml'
+      - 'Cargo.*'
+  # Run automatically for all pull requests
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  audit:
+    name: Run cargo audit to identify vulnerabilities in dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup update stable && rustup default stable
+      - run: cargo install cargo-audit --locked
+      - run: cargo audit

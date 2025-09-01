@@ -1,6 +1,6 @@
 # validate_detection_rule_json_cli
 
-[![Cargo Test](https://github.com/msayson/validate_detection_rule_json_cli/actions/workflows/test.yaml/badge.svg?branch=main)](https://github.com/msayson/validate_detection_rule_json_cli/actions/workflows/test.yaml) [![Code Scan](https://github.com/msayson/validate_detection_rule_json_cli/actions/workflows/code_scan.yaml/badge.svg?branch=main)](https://github.com/msayson/validate_detection_rule_json_cli/actions/workflows/code_scan.yaml)
+[![Cargo Test](https://github.com/msayson/validate_detection_rule_json_cli/actions/workflows/test.yaml/badge.svg?branch=main)](https://github.com/msayson/validate_detection_rule_json_cli/actions/workflows/test.yaml) [![Lint](https://github.com/msayson/validate_detection_rule_json_cli/actions/workflows/lint.yaml/badge.svg?branch=main)](https://github.com/msayson/validate_detection_rule_json_cli/actions/workflows/lint.yaml) [![Audit](https://github.com/msayson/validate_detection_rule_json_cli/actions/workflows/audit.yaml/badge.svg?branch=main)](https://github.com/msayson/validate_detection_rule_json_cli/actions/workflows/audit.yaml)
 
 Rust-based CLI to validate whether a file at a given filepath matches the [detection rule JSON Schema](resources/detection_rule_schema.json).
 
