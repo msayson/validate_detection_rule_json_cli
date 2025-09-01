@@ -21,7 +21,6 @@
     "required": [
         "id",
         "name",
-        "description",
         "version"
     ],
     "additionalProperties": false
