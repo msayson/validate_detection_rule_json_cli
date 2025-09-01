@@ -1,0 +1,30 @@
+name: Semgrep
+
+on:
+  # Enable manual triggering from the GitHub repository's Actions tab
+  workflow_dispatch:
+  # Run automatically when pushing changes to this workflow file
+  push:
+    branches:
+    - main
+    paths:
+    - .github/workflows/semgrep.yaml
+  # Run automatically for all pull requests
+  pull_request:
+  # Run on a weekly schedule
+  schedule:
+  - cron: 37 11 * * 2 # At 11:37am every Tuesday (random HH:MM to avoid load spike on GitHub Actions at 00:00)
+
+jobs:
+  semgrep:
+    name: semgrep/ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+    container:
+      image: semgrep/semgrep
+    steps:
+    - uses: actions/checkout@v4
+    - run: semgrep ci
