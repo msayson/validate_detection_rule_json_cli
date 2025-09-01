@@ -1,40 +1,13 @@
-use serde_json::json;
 use std::env;
 
 mod cli_argument_parser;
 use cli_argument_parser::parse_detection_rule_json;
 
-fn validate_detection_rule_data(detection_rule_json: &serde_json::Value) -> Result<(), String> {
-    let detection_rule_schema = json!({
-        "type": "object",
-        "properties": {
-            "id": {
-                "type": "string",
-                "description": "Unique identifier for the detection rule."
-            },
-            "name": {
-                "type": "string",
-                "description": "Name of the detection rule."
-            },
-            "description": {
-                "type": "string",
-                "description": "Description of the detection rule."
-            },
-            "version": {
-                "type": "number",
-                "description": "Version of the detection rule."
-            }
-        },
-        "required": [
-            "id",
-            "name",
-            "description",
-            "version"
-        ],
-        "additionalProperties": false
-    });
+const DETECTION_RULE_SCHEMA: &str = include_str!("../resources/detection_rule_schema.json");
 
-    let validator = jsonschema::validator_for(&detection_rule_schema).map_err(|err| format!("Error creating validator: {}", err))?;
+fn validate_detection_rule_data(detection_rule_json: &serde_json::Value) -> Result<(), String> {
+    let detection_rule_schema_json: serde_json::Value = serde_json::from_str(DETECTION_RULE_SCHEMA).map_err(|err| format!("Error parsing detection rule schema as JSON: {}", err))?;
+    let validator = jsonschema::validator_for(&detection_rule_schema_json).map_err(|err| format!("Error creating validator: {}", err))?;
 
     let validation_result = validator.validate(&detection_rule_json);
     if validation_result.is_err() {

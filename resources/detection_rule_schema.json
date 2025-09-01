@@ -1,0 +1,28 @@
+{
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string",
+            "description": "Unique identifier for the detection rule."
+        },
+        "name": {
+            "type": "string",
+            "description": "Name of the detection rule."
+        },
+        "description": {
+            "type": "string",
+            "description": "Description of the detection rule."
+        },
+        "version": {
+            "type": "number",
+            "description": "Version of the detection rule."
+        }
+    },
+    "required": [
+        "id",
+        "name",
+        "description",
+        "version"
+    ],
+    "additionalProperties": false
+}
