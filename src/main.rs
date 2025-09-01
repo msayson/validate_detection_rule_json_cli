@@ -1,3 +1,6 @@
+#![deny(clippy::all)]
+#![deny(clippy::pedantic)]
+
 use std::env;
 
 mod cli_argument_parser;
@@ -7,9 +10,9 @@ const DETECTION_RULE_SCHEMA: &str = include_str!("../resources/detection_rule_sc
 
 fn validate_detection_rule_data(detection_rule_json: &serde_json::Value) -> Result<(), String> {
     let detection_rule_schema_json: serde_json::Value = serde_json::from_str(DETECTION_RULE_SCHEMA)
-        .map_err(|err| format!("Error parsing detection rule schema as JSON: {}", err))?;
+        .map_err(|err| format!("Error parsing detection rule schema as JSON: {err}"))?;
     let validator = jsonschema::validator_for(&detection_rule_schema_json)
-        .map_err(|err| format!("Error creating validator: {}", err))?;
+        .map_err(|err| format!("Error creating validator: {err}"))?;
 
     let validation_result = validator.validate(detection_rule_json);
     if validation_result.is_err() {
@@ -43,9 +46,9 @@ fn validate_file(args: &[String]) -> Result<(), String> {
 fn main() {
     let args: Vec<String> = env::args().collect();
     match validate_file(&args) {
-        Ok(_) => println!("Validation successful."),
+        Ok(()) => println!("Validation successful."),
         Err(err_msg) => {
-            eprintln!("Failed detection rule validations, error: {}", err_msg);
+            eprintln!("Failed detection rule validations, error: {err_msg}");
             std::process::exit(1);
         }
     }

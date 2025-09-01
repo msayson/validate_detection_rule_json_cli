@@ -50,9 +50,8 @@ fn parse_filepath_from_args(args: &[String]) -> Result<PathBuf, &'static str> {
     }
 
     // Validate a file exists at given filepath
-    let canonical_filepath = match fs::canonicalize(first_input) {
-        Ok(path) => path,
-        Err(_) => return Err(INVALID_OR_UNSAFE_PATH_MSG),
+    let Ok(canonical_filepath) = fs::canonicalize(first_input) else {
+        return Err(INVALID_OR_UNSAFE_PATH_MSG);
     };
     if canonical_filepath.is_dir() {
         return Err(DIR_FILEPATH_MSG);
@@ -61,7 +60,7 @@ fn parse_filepath_from_args(args: &[String]) -> Result<PathBuf, &'static str> {
 }
 
 /// Parses the provided CLI arguments and returns the contents of the file
-/// pointed to by the first argument as a serde_json::Value.
+/// pointed to by the first argument as a `serde_json::Value`.
 ///
 /// # Arguments
 /// * `args` - A slice of command-line arguments
@@ -78,15 +77,15 @@ fn parse_filepath_from_args(args: &[String]) -> Result<PathBuf, &'static str> {
 /// - The file cannot be read
 /// - The file cannot be parsed as JSON
 pub fn parse_detection_rule_json(args: &[String]) -> Result<serde_json::Value, String> {
-    let path_buf: PathBuf = parse_filepath_from_args(args)
-        .map_err(|err| format!("Problem parsing filepath: {}", err))?;
+    let path_buf: PathBuf =
+        parse_filepath_from_args(args).map_err(|err| format!("Problem parsing filepath: {err}"))?;
     let path: &Path = path_buf.as_path();
     println!("Validating file at path {}", path.display());
 
     let detection_rule_contents = fs::read_to_string(path)
-        .map_err(|err| format!("Error reading detection rule file: {}", err))?;
+        .map_err(|err| format!("Error reading detection rule file: {err}"))?;
     let detection_rule_json: serde_json::Value = serde_json::from_str(&detection_rule_contents)
-        .map_err(|err| format!("Error parsing detection rule file as JSON: {}", err))?;
+        .map_err(|err| format!("Error parsing detection rule file as JSON: {err}"))?;
     Ok(detection_rule_json)
 }
 
