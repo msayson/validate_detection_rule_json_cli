@@ -1,7 +1,14 @@
 name: Cargo Build & Test
 
 on:
+  # Run automatically when pushing code, test, or dependency changes
   push:
+    paths:
+      - 'Cargo.*'
+      - '**.json'
+      - '**.rs'
+      - '**.yaml'
+  # Run automatically for all pull requests
   pull_request:
 
 env:
@@ -9,10 +16,14 @@ env:
 
 jobs:
   build_and_test:
-    name: Rust project - latest
-    runs-on: ubuntu-latest
+    name: Build and run unit tests on ${{ matrix.os }} with ${{ matrix.toolchain }} toolchain
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os:
+          - macOS-latest
+          - ubuntu-latest
+          - windows-latest
         toolchain:
           - stable
           - beta
