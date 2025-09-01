@@ -3,7 +3,8 @@ use std::path::{Path, PathBuf};
 
 pub const INVALID_OR_UNSAFE_PATH_MSG: &str = "Invalid or unsafe path";
 const DIR_FILEPATH_MSG: &str = "Must provide a file, not a directory";
-const UNEXPECTED_ARGS_MSG: &str = "Received invalid arguments\n  'validate_json --help' for more information.";
+const UNEXPECTED_ARGS_MSG: &str =
+    "Received invalid arguments\n  'validate_json --help' for more information.";
 
 /// Prints usage instructions to stdout and exits the program.
 fn print_help_and_exit() -> ! {
@@ -51,7 +52,7 @@ fn parse_filepath_from_args(args: &[String]) -> Result<PathBuf, &'static str> {
     // Validate a file exists at given filepath
     let canonical_filepath = match fs::canonicalize(first_input) {
         Ok(path) => path,
-        Err(_) => return Err(INVALID_OR_UNSAFE_PATH_MSG)
+        Err(_) => return Err(INVALID_OR_UNSAFE_PATH_MSG),
     };
     if canonical_filepath.is_dir() {
         return Err(DIR_FILEPATH_MSG);
@@ -77,20 +78,23 @@ fn parse_filepath_from_args(args: &[String]) -> Result<PathBuf, &'static str> {
 /// - The file cannot be read
 /// - The file cannot be parsed as JSON
 pub fn parse_detection_rule_json(args: &[String]) -> Result<serde_json::Value, String> {
-    let path_buf: PathBuf = parse_filepath_from_args(&args).map_err(|err| format!("Problem parsing filepath: {}", err))?;
+    let path_buf: PathBuf = parse_filepath_from_args(args)
+        .map_err(|err| format!("Problem parsing filepath: {}", err))?;
     let path: &Path = path_buf.as_path();
     println!("Validating file at path {}", path.display());
 
-    let detection_rule_contents = fs::read_to_string(path).map_err(|err| format!("Error reading detection rule file: {}", err))?;
-    let detection_rule_json: serde_json::Value = serde_json::from_str(&detection_rule_contents).map_err(|err| format!("Error parsing detection rule file as JSON: {}", err))?;
+    let detection_rule_contents = fs::read_to_string(path)
+        .map_err(|err| format!("Error reading detection rule file: {}", err))?;
+    let detection_rule_json: serde_json::Value = serde_json::from_str(&detection_rule_contents)
+        .map_err(|err| format!("Error parsing detection rule file as JSON: {}", err))?;
     Ok(detection_rule_json)
 }
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use assert_fs::TempDir;
     use assert_fs::fixture::{FileTouch, PathChild};
-    use super::*;
 
     const FIRST_ARG: &str = "./validate_json";
 
@@ -101,7 +105,7 @@ mod tests {
         let too_many_args_vector = vec![
             FIRST_ARG.to_string(),
             "file1.json".to_string(),
-            "file2.json".to_string()
+            "file2.json".to_string(),
         ];
         for args_vector in [empty_args, single_arg_vector, too_many_args_vector] {
             let result = parse_filepath_from_args(&args_vector);
@@ -112,10 +116,7 @@ mod tests {
     #[test]
     fn parse_filepath_from_args_rejects_nonexistent_file() {
         let invalid_file_path: &str = "/not_real_dir/not_real_file.json";
-        let input_args = vec![
-            FIRST_ARG.to_string(),
-            invalid_file_path.to_string()
-        ];
+        let input_args = vec![FIRST_ARG.to_string(), invalid_file_path.to_string()];
         let result = parse_filepath_from_args(&input_args);
         assert!(matches!(result, Err(INVALID_OR_UNSAFE_PATH_MSG)));
     }
@@ -124,10 +125,7 @@ mod tests {
     fn parse_filepath_from_args_rejects_dir() {
         let temp_dir = TempDir::new().unwrap();
         let dir_path = temp_dir.path().to_str().unwrap().to_string();
-        let input_args = vec![
-            FIRST_ARG.to_string(),
-            dir_path
-        ];
+        let input_args = vec![FIRST_ARG.to_string(), dir_path];
         let result = parse_filepath_from_args(&input_args);
         assert!(matches!(result, Err(DIR_FILEPATH_MSG)));
     }
@@ -140,7 +138,7 @@ mod tests {
 
         let input_args = vec![
             FIRST_ARG.to_string(),
-            input_file.path().to_str().unwrap().to_string()
+            input_file.path().to_str().unwrap().to_string(),
         ];
         let result = parse_filepath_from_args(&input_args);
 

@@ -6,15 +6,20 @@ use cli_argument_parser::parse_detection_rule_json;
 const DETECTION_RULE_SCHEMA: &str = include_str!("../resources/detection_rule_schema.json");
 
 fn validate_detection_rule_data(detection_rule_json: &serde_json::Value) -> Result<(), String> {
-    let detection_rule_schema_json: serde_json::Value = serde_json::from_str(DETECTION_RULE_SCHEMA).map_err(|err| format!("Error parsing detection rule schema as JSON: {}", err))?;
-    let validator = jsonschema::validator_for(&detection_rule_schema_json).map_err(|err| format!("Error creating validator: {}", err))?;
+    let detection_rule_schema_json: serde_json::Value = serde_json::from_str(DETECTION_RULE_SCHEMA)
+        .map_err(|err| format!("Error parsing detection rule schema as JSON: {}", err))?;
+    let validator = jsonschema::validator_for(&detection_rule_schema_json)
+        .map_err(|err| format!("Error creating validator: {}", err))?;
 
-    let validation_result = validator.validate(&detection_rule_json);
+    let validation_result = validator.validate(detection_rule_json);
     if validation_result.is_err() {
-        for error in validator.iter_errors(&detection_rule_json) {
+        for error in validator.iter_errors(detection_rule_json) {
             eprintln!("Error: {error}");
         }
-        return Err(format!("Validation error: {}", validation_result.unwrap_err()));
+        return Err(format!(
+            "Validation error: {}",
+            validation_result.unwrap_err()
+        ));
     }
     Ok(())
 }
@@ -28,11 +33,10 @@ fn validate_detection_rule_data(detection_rule_json: &serde_json::Value) -> Resu
 /// * `args` - A slice of command-line arguments
 ///
 /// # Behaviour
-/// - Prints usage instructions and exits with code `0` if `--help`
-///     is passed as the input argument
+/// - Prints usage instructions and exits with code `0` if `--help` is passed as the input argument
 /// - Exits with code `1` if argument or file parsing fails
 fn validate_file(args: &[String]) -> Result<(), String> {
-    let detection_rule_json: serde_json::Value = parse_detection_rule_json(&args)?;
+    let detection_rule_json: serde_json::Value = parse_detection_rule_json(args)?;
     validate_detection_rule_data(&detection_rule_json)
 }
 
@@ -49,21 +53,24 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
     use super::*;
+    use std::path::Path;
 
     const FIRST_ARG: &str = "./validate_json";
 
     #[test]
     fn validate_file_rejects_nonexistent_file() {
         let invalid_file_path: &str = "/not_real_dir/not_real_file.json";
-        let input_args = vec![
-            FIRST_ARG.to_string(),
-            invalid_file_path.to_string()
-        ];
+        let input_args = vec![FIRST_ARG.to_string(), invalid_file_path.to_string()];
         let result = validate_file(&input_args);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), format!("Problem parsing filepath: {}", cli_argument_parser::INVALID_OR_UNSAFE_PATH_MSG));
+        assert_eq!(
+            result.unwrap_err(),
+            format!(
+                "Problem parsing filepath: {}",
+                cli_argument_parser::INVALID_OR_UNSAFE_PATH_MSG
+            )
+        );
     }
 
     #[test]
@@ -71,32 +78,40 @@ mod tests {
         let file_path = Path::new("resources/test/valid_detector_rules/simple_no_op_rule.json");
         let input_args = vec![
             FIRST_ARG.to_string(),
-            file_path.to_str().unwrap().to_string()
+            file_path.to_str().unwrap().to_string(),
         ];
         assert!(validate_file(&input_args).is_ok());
     }
 
     #[test]
     fn validate_file_rejects_rule_missing_required_properties() {
-        let file_path = Path::new("resources/test/invalid_detector_rules/missing_required_properties.json");
+        let file_path =
+            Path::new("resources/test/invalid_detector_rules/missing_required_properties.json");
         let input_args = vec![
             FIRST_ARG.to_string(),
-            file_path.to_str().unwrap().to_string()
+            file_path.to_str().unwrap().to_string(),
         ];
         let result = validate_file(&input_args);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Validation error: \"id\" is a required property");
+        assert_eq!(
+            result.unwrap_err(),
+            "Validation error: \"id\" is a required property"
+        );
     }
 
     #[test]
     fn validate_file_rejects_rule_with_unsupported_properties() {
-        let file_path = Path::new("resources/test/invalid_detector_rules/with_unsupported_properties.json");
+        let file_path =
+            Path::new("resources/test/invalid_detector_rules/with_unsupported_properties.json");
         let input_args = vec![
             FIRST_ARG.to_string(),
-            file_path.to_str().unwrap().to_string()
+            file_path.to_str().unwrap().to_string(),
         ];
         let result = validate_file(&input_args);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Validation error: Additional properties are not allowed ('unsupported_property' was unexpected)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Validation error: Additional properties are not allowed ('unsupported_property' was unexpected)"
+        );
     }
 }
