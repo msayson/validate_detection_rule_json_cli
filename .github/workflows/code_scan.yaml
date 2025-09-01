@@ -4,7 +4,7 @@ on:
   # Run automatically when pushing code, test, or dependency changes
   push:
     paths:
-      - '.github/workflows/scan_code.yaml'
+      - '.github/workflows/code_scan.yaml'
       - 'Cargo.*'
       - '**.json'
       - '**.rs'
