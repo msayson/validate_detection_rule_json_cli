@@ -23,6 +23,28 @@ fn print_validation_errors(
     }
 }
 
+fn validate_json_schema(
+    schema_str: &str,
+    json_value: &serde_json::Value,
+    schema_type: &str,
+) -> Result<(), String> {
+    let schema_json: serde_json::Value = serde_json::from_str(schema_str)
+        .map_err(|err| format!("Error parsing {schema_type} schema as JSON: {err}"))?;
+    let validator = jsonschema::validator_for(&schema_json)
+        .map_err(|err| format!("Error creating {schema_type} validator: {err}"))?;
+
+    let validation_result = validator.validate(json_value);
+    if validation_result.is_err() {
+        print_validation_errors(json_value, &validator);
+        return Err(format!(
+            "Validation error for {}: {}",
+            schema_type,
+            validation_result.unwrap_err()
+        ));
+    }
+    Ok(())
+}
+
 fn validate_request_allow_list_schema(
     optional_request_allow_list_json: Option<&serde_json::Value>,
 ) -> Result<(), String> {
@@ -31,48 +53,20 @@ fn validate_request_allow_list_schema(
     }
 
     let request_allow_list_json = optional_request_allow_list_json.unwrap();
-    let request_allow_list_schema_json: serde_json::Value =
-        serde_json::from_str(REQUEST_ALLOW_LIST_SCHEMA)
-            .map_err(|err| format!("Error parsing request allow-list schema as JSON: {err}"))?;
-    let request_allow_list_validator =
-        jsonschema::validator_for(&request_allow_list_schema_json)
-            .map_err(|err| format!("Error creating request allow-list validator: {err}"))?;
-
-    let request_allow_list_validation_result =
-        request_allow_list_validator.validate(request_allow_list_json);
-    if request_allow_list_validation_result.is_err() {
-        print_validation_errors(request_allow_list_json, &request_allow_list_validator);
-        return Err(format!(
-            "Request allow-list validation error: {}",
-            request_allow_list_validation_result.unwrap_err()
-        ));
-    }
-    Ok(())
+    validate_json_schema(
+        REQUEST_ALLOW_LIST_SCHEMA,
+        request_allow_list_json,
+        "request allow-list",
+    )
 }
 
 fn validate_detection_rule_data(
     detection_rule_json: &serde_json::Value,
     optional_request_allow_list_json: Option<&serde_json::Value>,
 ) -> Result<(), String> {
-    let detection_rule_schema_json: serde_json::Value = serde_json::from_str(DETECTION_RULE_SCHEMA)
-        .map_err(|err| format!("Error parsing detection rule schema as JSON: {err}"))?;
-    let detection_rule_validator = jsonschema::validator_for(&detection_rule_schema_json)
-        .map_err(|err| format!("Error creating detection rule validator: {err}"))?;
-
-    let detection_rule_validation_result = detection_rule_validator.validate(detection_rule_json);
-    if detection_rule_validation_result.is_err() {
-        print_validation_errors(detection_rule_json, &detection_rule_validator);
-        return Err(format!(
-            "Validation error: {}",
-            detection_rule_validation_result.unwrap_err()
-        ));
-    }
-
-    validate_request_allow_list_schema(optional_request_allow_list_json)?;
-
+    validate_json_schema(DETECTION_RULE_SCHEMA, detection_rule_json, "detection rule")?;
+    validate_request_allow_list_schema(optional_request_allow_list_json)
     // TODO: Validate detection rule schema against request allow-list if provided
-
-    Ok(())
 }
 
 /// Validates the file specified in CLI arguments.
@@ -171,7 +165,7 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
-            "Validation error: \"id\" is a required property"
+            "Validation error for detection rule: \"id\" is a required property"
         );
     }
 
@@ -187,7 +181,7 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
-            "Validation error: Additional properties are not allowed ('unsupported_property' was unexpected)"
+            "Validation error for detection rule: Additional properties are not allowed ('unsupported_property' was unexpected)"
         );
     }
 
@@ -203,7 +197,7 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
-            "Validation error: Additional properties are not allowed ('args' was unexpected)"
+            "Validation error for detection rule: Additional properties are not allowed ('args' was unexpected)"
         );
     }
 
@@ -222,7 +216,7 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
-            "Request allow-list validation error: {\"command\":\"echo\",\"exactArgs\":[\"first\",\"second\"],\"initialArgs\":[\"first\"]} is not valid under any of the schemas listed in the 'oneOf' keyword"
+            "Validation error for request allow-list: {\"command\":\"echo\",\"exactArgs\":[\"first\",\"second\"],\"initialArgs\":[\"first\"]} is not valid under any of the schemas listed in the 'oneOf' keyword"
         );
     }
 
