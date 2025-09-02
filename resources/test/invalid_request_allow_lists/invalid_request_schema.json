@@ -1,0 +1,16 @@
+{
+    "id": "Namespace::TestInvalidRequestAllowList1",
+    "description": "This is an invalid request allow-list that incorrectly provides both exactArgs and initialArgs for a request.",
+    "allowedCliCommands": [
+        {
+            "command": "echo",
+            "exactArgs": [
+                "first",
+                "second"
+            ],
+            "initialArgs": [
+                "first"
+            ]
+        }
+    ]
+}

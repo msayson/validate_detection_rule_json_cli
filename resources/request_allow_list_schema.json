@@ -1,0 +1,122 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+        "id": {
+            "description": "Unique identifier for the request allow-list",
+            "type": "string"
+        },
+        "description": {
+            "description": "Description of the request allow-list",
+            "type": "string"
+        },
+        "allowedApiMethods": {
+            "description": "Allow-listed API methods",
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/allowedApiMethod"
+            }
+        },
+        "allowedCliCommands": {
+            "description": "Allow-listed CLI commands",
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/allowedCliCommand"
+            }
+        }
+    },
+    "required": [
+        "id"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+        "allowedApiMethod": {
+            "description": "An allow-listed API method",
+            "type": "object",
+            "properties": {
+                "method": {
+                    "type": "string",
+                    "enum": [
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE"
+                    ]
+                },
+                "url": {
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description of the API method",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "method",
+                "url"
+            ],
+            "additionalProperties": false
+        },
+        "allowedCliCommand": {
+            "description": "A allow-listed CLI command",
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "exactArgs": {
+                    "description": "Exact list of arguments to match (exclusive)",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "initialArgs": {
+                    "description": "Initial arguments to match (followed by any other arguments)",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "description": {
+                    "description": "Description of the allowed CLI command",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "command"
+            ],
+            "additionalProperties": false,
+            "oneOf": [
+                {
+                    "required": [
+                        "exactArgs"
+                    ],
+                    "not": {
+                        "required": [
+                            "initialArgs"
+                        ]
+                    }
+                },
+                {
+                    "required": [
+                        "initialArgs"
+                    ],
+                    "not": {
+                        "required": [
+                            "exactArgs"
+                        ]
+                    }
+                },
+                {
+                    "not": {
+                        "required": [
+                            "exactArgs",
+                            "initialArgs"
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,9 @@
+{
+    "id": "Namespace::TestRequestAllowList1",
+    "description": "This is a test request allow-list.",
+    "allowedCliCommands": [
+        {
+            "command": "echo"
+        }
+    ]
+}
