@@ -8,6 +8,21 @@ use cli_argument_parser::parse_detection_rule_json;
 
 const DETECTION_RULE_SCHEMA: &str = include_str!("../resources/detection_rule_schema.json");
 
+fn print_validation_errors(
+    detection_rule_json: &serde_json::Value,
+    validator: &jsonschema::Validator,
+) {
+    eprintln!("----");
+    for error in validator.iter_errors(detection_rule_json) {
+        // eprintln!("Error at instance path {}, schema path {}: {}", instance_path, schema_path, error);
+        eprintln!("Error: {error}");
+        eprintln!("Instance path: {}", error.instance_path);
+        eprintln!("Schema path: {}", error.schema_path);
+        eprintln!("Keyword kind: {:?}", error.kind);
+        eprintln!("----");
+    }
+}
+
 fn validate_detection_rule_data(detection_rule_json: &serde_json::Value) -> Result<(), String> {
     let detection_rule_schema_json: serde_json::Value = serde_json::from_str(DETECTION_RULE_SCHEMA)
         .map_err(|err| format!("Error parsing detection rule schema as JSON: {err}"))?;
@@ -16,15 +31,7 @@ fn validate_detection_rule_data(detection_rule_json: &serde_json::Value) -> Resu
 
     let validation_result = validator.validate(detection_rule_json);
     if validation_result.is_err() {
-        eprintln!("----");
-        for error in validator.iter_errors(detection_rule_json) {
-            // eprintln!("Error at instance path {}, schema path {}: {}", instance_path, schema_path, error);
-            eprintln!("Error: {error}");
-            eprintln!("Instance path: {}", error.instance_path);
-            eprintln!("Schema path: {}", error.schema_path);
-            eprintln!("Keyword kind: {:?}", error.kind);
-            eprintln!("----");
-        }
+        print_validation_errors(detection_rule_json, &validator);
         return Err(format!(
             "Validation error: {}",
             validation_result.unwrap_err()
