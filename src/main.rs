@@ -16,8 +16,14 @@ fn validate_detection_rule_data(detection_rule_json: &serde_json::Value) -> Resu
 
     let validation_result = validator.validate(detection_rule_json);
     if validation_result.is_err() {
+        eprintln!("----");
         for error in validator.iter_errors(detection_rule_json) {
+            // eprintln!("Error at instance path {}, schema path {}: {}", instance_path, schema_path, error);
             eprintln!("Error: {error}");
+            eprintln!("Instance path: {}", error.instance_path);
+            eprintln!("Schema path: {}", error.schema_path);
+            eprintln!("Keyword kind: {:?}", error.kind);
+            eprintln!("----");
         }
         return Err(format!(
             "Validation error: {}",
@@ -125,6 +131,22 @@ mod tests {
         assert_eq!(
             result.unwrap_err(),
             "Validation error: Additional properties are not allowed ('unsupported_property' was unexpected)"
+        );
+    }
+
+    #[test]
+    fn validate_file_rejects_invalid_step_request_properties() {
+        let file_path =
+            Path::new("resources/test/invalid_detector_rules/invalid_request_properties.json");
+        let input_args = vec![
+            FIRST_ARG.to_string(),
+            file_path.to_str().unwrap().to_string(),
+        ];
+        let result = validate_file(&input_args);
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            "Validation error: Additional properties are not allowed ('args' was unexpected)"
         );
     }
 }
