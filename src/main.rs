@@ -14,7 +14,6 @@ fn print_validation_errors(
 ) {
     eprintln!("----");
     for error in validator.iter_errors(detection_rule_json) {
-        // eprintln!("Error at instance path {}, schema path {}: {}", instance_path, schema_path, error);
         eprintln!("Error: {error}");
         eprintln!("Instance path: {}", error.instance_path);
         eprintln!("Schema path: {}", error.schema_path);
