@@ -1,0 +1,20 @@
+{
+    "id": "Namespace::TestRuleExactMatchCliCommandArgs",
+    "name": "Test Rule",
+    "description": "This is a test detection rule matching exact CLI command arguments.",
+    "version": "0.1.2",
+    "steps": [
+        {
+            "id": "Test step 1",
+            "description": "This is a no-op step.",
+            "requestType": "cli",
+            "request": {
+                "command": "echo",
+                "args": [
+                    "Hello",
+                    "world!"
+                ]
+            }
+        }
+    ]
+}

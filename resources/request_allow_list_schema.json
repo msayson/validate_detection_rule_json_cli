@@ -87,7 +87,7 @@
                 "command"
             ],
             "additionalProperties": false,
-            "oneOf": [
+            "anyOf": [
                 {
                     "required": [
                         "exactArgs"

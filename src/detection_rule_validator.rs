@@ -52,13 +52,79 @@ fn validate_request_allow_list_schema(
     )
 }
 
+fn validate_cli_request_matches_allow_list(
+    cli_request: &serde_json::Value,
+    allow_listed_cli_requests: Option<&Vec<serde_json::Value>>,
+) -> Result<(), String> {
+    let cli_command = cli_request.get("command").unwrap().as_str().unwrap();
+
+    if allow_listed_cli_requests.is_none() {
+        return Err(format!(
+            "Validation error: CLI command '{cli_command}' is not allowed by the request allow-list"
+        ));
+    }
+    let allow_listed_cli_requests_matching_cli_command = allow_listed_cli_requests
+        .unwrap()
+        .iter()
+        .filter(|allowed_cli_request| {
+            allowed_cli_request
+                .get("command")
+                .unwrap()
+                .as_str()
+                .unwrap()
+                == cli_command
+        });
+    if allow_listed_cli_requests_matching_cli_command.count() == 0 {
+        return Err(format!(
+            "Validation error: CLI command '{cli_command}' is not allowed by the request allow-list"
+        ));
+    }
+
+    // TODO: validate CLI command arguments against allow-list
+    Ok(())
+}
+
+fn validate_detection_rule_matches_request_allow_list(
+    detection_rule_json: &serde_json::Value,
+    optional_request_allow_list_json: Option<&serde_json::Value>,
+) -> Result<(), String> {
+    if optional_request_allow_list_json.is_none() {
+        return Ok(());
+    }
+    // Validate detection rule schema against the request allow-list
+    let request_allow_list_json: &serde_json::Value = optional_request_allow_list_json.unwrap();
+    let allow_listed_cli_requests: Option<&Vec<serde_json::Value>> = request_allow_list_json
+        .get("allowedCliCommands")
+        .and_then(|v| v.as_array());
+
+    // Extract each CLI command from the detection rule and verify it is allowed by the request allow-list
+    let detection_rule_steps = detection_rule_json
+        .get("steps")
+        .unwrap()
+        .as_array()
+        .unwrap();
+    for step in detection_rule_steps {
+        let step_request_type = step.get("requestType").unwrap().as_str().unwrap();
+        let request = step.get("request").unwrap();
+        if step_request_type == "cli" {
+            validate_cli_request_matches_allow_list(request, allow_listed_cli_requests)?;
+        }
+        // TODO: validate API request against allow-list
+    }
+    Ok(())
+}
+
 pub fn validate_detection_rule_data(
     detection_rule_json: &serde_json::Value,
     optional_request_allow_list_json: Option<&serde_json::Value>,
 ) -> Result<(), String> {
     validate_json_schema(DETECTION_RULE_SCHEMA, detection_rule_json, "detection rule")?;
-    validate_request_allow_list_schema(optional_request_allow_list_json)
-    // TODO: Validate detection rule schema against request allow-list if provided
+    validate_request_allow_list_schema(optional_request_allow_list_json)?;
+
+    validate_detection_rule_matches_request_allow_list(
+        detection_rule_json,
+        optional_request_allow_list_json,
+    )
 }
 
 #[cfg(test)]
@@ -159,7 +225,65 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
-            "Validation error for request allow-list: {\"command\":\"echo\",\"exactArgs\":[\"first\",\"second\"],\"initialArgs\":[\"first\"]} is not valid under any of the schemas listed in the 'oneOf' keyword"
+            "Validation error for request allow-list: {\"command\":\"echo\",\"exactArgs\":[\"first\",\"second\"],\"initialArgs\":[\"first\"]} is not valid under any of the schemas listed in the 'anyOf' keyword"
         );
+    }
+
+    #[test]
+    fn validate_detection_rule_data_passes_valid_request_allow_list() {
+        let detection_rule_json: serde_json::Value = parse_json_from_filepath(
+            "resources/test/valid_detector_rules/simple_no_op_rule.json",
+            "detection rule",
+        )
+        .unwrap();
+        let request_allow_list_json: serde_json::Value = parse_json_from_filepath(
+            "resources/test/valid_request_allow_lists/simple_cli_request_allow_list.json",
+            "request allow-list",
+        )
+        .unwrap();
+
+        let result =
+            validate_detection_rule_data(&detection_rule_json, Some(&request_allow_list_json));
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn validate_detection_rule_data_rejects_unallowed_cli_command() {
+        let detection_rule_json: serde_json::Value = parse_json_from_filepath(
+            "resources/test/valid_detector_rules/multiple_cli_requests_rule.json",
+            "detection rule",
+        )
+        .unwrap();
+        let request_allow_list_json: serde_json::Value = parse_json_from_filepath(
+            "resources/test/valid_request_allow_lists/exact_cli_args_allow_list.json",
+            "request allow-list",
+        )
+        .unwrap();
+
+        let result =
+            validate_detection_rule_data(&detection_rule_json, Some(&request_allow_list_json));
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            "Validation error: CLI command 'ls' is not allowed by the request allow-list"
+        );
+    }
+
+    #[test]
+    fn validate_detection_rule_data_passes_exact_allowed_cli_command_args() {
+        let detection_rule_json: serde_json::Value = parse_json_from_filepath(
+            "resources/test/valid_detector_rules/exact_allowed_cli_args_rule.json",
+            "detection rule",
+        )
+        .unwrap();
+        let request_allow_list_json: serde_json::Value = parse_json_from_filepath(
+            "resources/test/valid_request_allow_lists/exact_cli_args_allow_list.json",
+            "request allow-list",
+        )
+        .unwrap();
+
+        let result =
+            validate_detection_rule_data(&detection_rule_json, Some(&request_allow_list_json));
+        assert!(result.is_ok());
     }
 }
