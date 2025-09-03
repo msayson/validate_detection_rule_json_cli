@@ -16,7 +16,7 @@
         },
         "version": {
             "description": "Version of the detection rule",
-            "type": "number"
+            "type": "string"
         },
         "steps": {
             "description": "Sequence of steps to execute",

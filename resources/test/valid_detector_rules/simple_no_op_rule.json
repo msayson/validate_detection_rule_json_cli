@@ -2,7 +2,7 @@
     "id": "Namespace::TestRule1",
     "name": "Test Rule",
     "description": "This is a test detection rule.",
-    "version": 0.1,
+    "version": "0.1.2",
     "steps": [
         {
             "id": "Test step 1",
