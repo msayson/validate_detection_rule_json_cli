@@ -1,8 +1,8 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-pub const INVALID_OR_UNSAFE_PATH_MSG: &str = "Invalid or unsafe path";
-const DIR_FILEPATH_MSG: &str = "Must provide a file, not a directory";
+use crate::file_parser::{parse_filepath, parse_json_file};
+
 const UNEXPECTED_ARGS_MSG: &str =
     "Received invalid arguments\n  'validate_json --help' for more information.";
 
@@ -18,29 +18,7 @@ fn print_help_and_exit() -> ! {
     std::process::exit(0);
 }
 
-/// Parses and validates the file path argument from CLI input.
-///
-/// Expects exactly one positional argument after the executable name:
-/// the path to the file to validate, or `--help`.
-///
-/// If `--help` is passed, it prints usage information and exits.
-/// Otherwise, validates the file path points to a file, not a directory,
-/// and returns the canonicalized file path.
-///
-/// # Arguments
-/// * `args` - A slice of command-line arguments
-///
-/// # Returns
-/// * `Ok(PathBuf)` - A canonicalized, validated file path; OR
-/// * `Err(&'static str)` - An error message describing the failure
-///
-/// # Errors
-/// Returns an error if:
-/// - The number of arguments is incorrect
-/// - The path is invalid or unsafe
-/// - The path points to a directory
-fn parse_filepath_from_args(args: &[String]) -> Result<PathBuf, &'static str> {
-    // Validate provides required arguments
+fn parse_detection_rule_filepath_from_args(args: &[String]) -> Result<PathBuf, &'static str> {
     if args.len() < 2 || args.len() > 3 {
         return Err(UNEXPECTED_ARGS_MSG);
     }
@@ -48,15 +26,7 @@ fn parse_filepath_from_args(args: &[String]) -> Result<PathBuf, &'static str> {
     if first_input == "--help" {
         print_help_and_exit();
     }
-
-    // Validate a file exists at given filepath
-    let Ok(canonical_filepath) = fs::canonicalize(first_input) else {
-        return Err(INVALID_OR_UNSAFE_PATH_MSG);
-    };
-    if canonical_filepath.is_dir() {
-        return Err(DIR_FILEPATH_MSG);
-    }
-    Ok(canonical_filepath)
+    parse_filepath(first_input)
 }
 
 fn parse_request_allow_list_filepath_from_args(
@@ -69,15 +39,7 @@ fn parse_request_allow_list_filepath_from_args(
     if second_input == "--help" {
         print_help_and_exit();
     }
-
-    // Validate a file exists at given filepath
-    let Ok(canonical_filepath) = fs::canonicalize(second_input) else {
-        return Err(INVALID_OR_UNSAFE_PATH_MSG);
-    };
-    if canonical_filepath.is_dir() {
-        return Err(DIR_FILEPATH_MSG);
-    }
-    Ok(Some(canonical_filepath))
+    parse_filepath(second_input).map(Some)
 }
 
 /// Parses the provided CLI arguments and returns the contents of the file
@@ -98,16 +60,9 @@ fn parse_request_allow_list_filepath_from_args(
 /// - The file cannot be read
 /// - The file cannot be parsed as JSON
 pub fn parse_detection_rule_json(args: &[String]) -> Result<serde_json::Value, String> {
-    let path_buf: PathBuf = parse_filepath_from_args(args)
+    let path_buf: PathBuf = parse_detection_rule_filepath_from_args(args)
         .map_err(|err| format!("Problem parsing detection rule filepath: {err}"))?;
-    let path: &Path = path_buf.as_path();
-    println!("Parsing detection rule file at path {}", path.display());
-
-    let detection_rule_contents = fs::read_to_string(path)
-        .map_err(|err| format!("Error reading detection rule file: {err}"))?;
-    let detection_rule_json: serde_json::Value = serde_json::from_str(&detection_rule_contents)
-        .map_err(|err| format!("Error parsing detection rule file as JSON: {err}"))?;
-    Ok(detection_rule_json)
+    parse_json_file(&path_buf, "detection rule")
 }
 
 /// Parses the provided CLI arguments and returns the contents of the file
@@ -148,9 +103,11 @@ pub fn parse_request_allow_list_json(args: &[String]) -> Result<Option<serde_jso
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use assert_fs::TempDir;
     use assert_fs::fixture::{FileTouch, PathChild};
+
+    use super::*;
+    use crate::file_parser::{DIR_FILEPATH_MSG, INVALID_OR_UNSAFE_PATH_MSG};
 
     const FIRST_ARG: &str = "./validate_json";
 
