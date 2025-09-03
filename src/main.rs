@@ -46,7 +46,7 @@ mod tests {
 
     use super::*;
 
-    const FIRST_ARG: &str = "./validate_json";
+    const FIRST_ARG: &str = "./validate_detection_rule_json";
 
     #[test]
     fn validate_file_rejects_nonexistent_file() {

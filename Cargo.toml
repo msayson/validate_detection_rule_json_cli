@@ -1,5 +1,5 @@
 [package]
-name = "validate_json"
+name = "validate_detection_rule_json"
 version = "0.1.0"
 edition = "2024"
 

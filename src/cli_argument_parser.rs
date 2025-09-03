@@ -4,17 +4,25 @@ use std::path::{Path, PathBuf};
 use crate::file_parser::{parse_filepath, parse_json_file};
 
 const UNEXPECTED_ARGS_MSG: &str =
-    "Received invalid arguments\n  'validate_json --help' for more information.";
+    "Received invalid arguments\n  'validate_detection_rule_json --help' for more information.";
 
 /// Prints usage instructions to stdout and exits the program.
 fn print_help_and_exit() -> ! {
-    println!("Usage: validate_json FILE");
-    println!("   or: validate_json --help");
-    println!("Validate provided file against the expected JSON Schema.");
-    println!("Example: validate_json ./detection_rule.json");
+    println!(
+        "Usage: validate_detection_rule_json DETECTION_RULE_FILEPATH [REQUEST_ALLOW_LIST_FILEPATH]"
+    );
+    println!("   or: validate_detection_rule_json --help");
+    println!("\nValidate provided detection rule against the expected JSON Schema.");
+    println!("\nExample: validate_detection_rule_json ./detection_rule.json");
+    println!(
+        "     or: validate_detection_rule_json ./detection_rule.json ./request_allow_list.json"
+    );
     println!("\nOptions:\n    --help display help and exit");
     println!("\nArguments:");
-    println!("    FILE : filepath of the file to validate");
+    println!("    DETECTION_RULE_FILEPATH : filepath of the detection rule to validate");
+    println!(
+        "    REQUEST_ALLOW_LIST_FILEPATH : filepath of the request allow-list to enforce on the detection rule"
+    );
     std::process::exit(0);
 }
 
@@ -109,7 +117,7 @@ mod tests {
     use super::*;
     use crate::file_parser::{DIR_FILEPATH_MSG, INVALID_OR_UNSAFE_PATH_MSG};
 
-    const FIRST_ARG: &str = "./validate_json";
+    const FIRST_ARG: &str = "./validate_detection_rule_json";
 
     #[test]
     fn parse_detection_rule_json_rejects_invalid_number_args() {

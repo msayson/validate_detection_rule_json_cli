@@ -13,12 +13,12 @@
 ### Building / testing the package locally
 
 * `cargo make release-check` runs fmt check, build, test, and clippy - requires installing cargo-make, see first-time set-up steps above
-* `cargo build` builds the executable so that it can be run via `./target/debug/validate_json`
+* `cargo build` builds the executable so that it can be run via `./target/debug/validate_detection_rule_json`
 * `cargo test` runs all unit tests
 * `cargo clippy --all-targets -- -D warnings` evaluates code for common style issues, failing if there are any warnings/errors
-* `./target/debug/validate_json [OPTIONS]` runs the locally built executable with the given options, if it has been set up via `cargo build`
-  * Eg. `./target/debug/validate_json --help` displays the CLI's help text
-  * Eg. `./target/debug/validate_json some_file.json` runs the validator against the provided input file
+* `./target/debug/validate_detection_rule_json [OPTIONS]` runs the locally built executable with the given options, if it has been set up via `cargo build`
+  * Eg. `./target/debug/validate_detection_rule_json --help` displays the CLI's help text
+  * Eg. `./target/debug/validate_detection_rule_json some_file.json` runs the validator against the provided input file
 * `cargo run -- [OPTIONS]` builds the executable and runs it with the given options
   * Eg. `cargo run -- --help` builds the package and displays the CLI's help text
   * Eg. `cargo run -- some_file.json` builds the package and runs the validator against the provided input file
