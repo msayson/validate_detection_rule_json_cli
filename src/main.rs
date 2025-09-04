@@ -4,6 +4,7 @@
 use std::env;
 
 mod cli_argument_parser;
+mod cli_request_validator;
 mod detection_rule_validator;
 mod file_parser;
 
