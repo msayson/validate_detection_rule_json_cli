@@ -48,6 +48,19 @@ fn validate_cli_args_match_allow_list(
     ))
 }
 
+/// Validates a CLI request against an allow-list of CLI requests.
+///
+/// # Arguments
+/// * `cli_request` - A JSON value representing the CLI request to validate.
+/// * `allow_listed_cli_requests` - An optional vector of JSON values representing the allow-listed CLI requests.
+///   If none, no CLI requests are allowed.
+///
+/// # Returns
+/// * `Ok(())` if the CLI request is allowed by the request allow-list.
+/// * `Err(String)` An error message if the CLI request is not allowed.
+///
+/// # Errors
+/// Returns an error if the CLI command is not allowed by the request allow-list.
 pub fn validate_cli_request(
     cli_request: &serde_json::Value,
     allow_listed_cli_requests: Option<&Vec<serde_json::Value>>,

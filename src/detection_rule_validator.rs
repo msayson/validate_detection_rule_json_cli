@@ -84,6 +84,24 @@ fn validate_detection_rule_matches_request_allow_list(
     Ok(())
 }
 
+/// Validates a detection rule JSON value against the detection rule JSON Schema and
+/// checks that it adheres to the request allow-list.
+///
+/// # Arguments
+/// * `detection_rule_json` - A JSON value representing the detection rule
+/// * `optional_request_allow_list_json` - An optional JSON value representing allow-listed API and CLI requests.
+///   If none, all requests that match the detection rule schema are allowed.
+///
+/// # Returns
+/// * `Ok(())` if the detection rule is valid and adheres to the request allow-list.
+/// * `Err(String)` An error message if the detection rule is invalid or does not adhere
+///   to the request allow-list.
+///
+/// # Errors
+/// Returns an error if:
+/// * The detection rule does not conform to the detection rule JSON Schema.
+/// * The request allow-list is provided and does not conform to the request allow-list JSON Schema.
+/// * The detection rule contains a CLI request that is not allowed by the request allow-list.
 pub fn validate_detection_rule_data(
     detection_rule_json: &serde_json::Value,
     optional_request_allow_list_json: Option<&serde_json::Value>,
