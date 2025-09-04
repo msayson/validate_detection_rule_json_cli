@@ -8,6 +8,23 @@ fn parse_cli_command(cli_request: &serde_json::Value) -> Result<String, String> 
     Ok(cli_command.to_string())
 }
 
+fn validate_no_required_args(
+    cli_command: &str,
+    allow_listed_requests_for_cli_command: Vec<&serde_json::Value>,
+) -> Result<(), String> {
+    for allowed_cli_request in allow_listed_requests_for_cli_command {
+        let exact_args = allowed_cli_request.get("exactArgs");
+        let initial_args = allowed_cli_request.get("initialArgs");
+
+        if exact_args.is_some() || initial_args.is_some() {
+            return Err(format!(
+                "Validation error: CLI command '{cli_command}' without arguments is not allowed by the request allow-list"
+            ));
+        }
+    }
+    Ok(())
+}
+
 fn validate_cli_args_match_allow_list(
     cli_command: &str,
     cli_request: &serde_json::Value,
@@ -15,7 +32,7 @@ fn validate_cli_args_match_allow_list(
 ) -> Result<(), String> {
     let optional_cli_args = cli_request.get("args");
     if optional_cli_args.is_none() {
-        return Ok(());
+        return validate_no_required_args(cli_command, allow_listed_requests_for_cli_command);
     }
     let cli_args = optional_cli_args.unwrap().as_array().unwrap();
 
@@ -167,6 +184,9 @@ mod tests {
                 "command": "echo",
                 "args": []
             }),
+            serde_json::json!({
+                "command": "echo"
+            }),
         ] {
             let result = validate_cli_request(&cli_request, allow_listed_cli_requests);
             assert!(
@@ -243,6 +263,9 @@ mod tests {
             serde_json::json!({
                 "command": "echo",
                 "args": []
+            }),
+            serde_json::json!({
+                "command": "echo"
             }),
         ] {
             let result = validate_cli_request(&cli_request, allow_listed_cli_requests);
