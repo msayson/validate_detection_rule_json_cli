@@ -12,15 +12,26 @@ fn validate_no_required_args(
     cli_command: &str,
     allow_listed_requests_for_cli_command: Vec<&serde_json::Value>,
 ) -> Result<(), String> {
+    let mut allow_list_includes_requests_requiring_args = false;
+
     for allowed_cli_request in allow_listed_requests_for_cli_command {
         let exact_args = allowed_cli_request.get("exactArgs");
         let initial_args = allowed_cli_request.get("initialArgs");
 
-        if exact_args.is_some() || initial_args.is_some() {
-            return Err(format!(
-                "Validation error: CLI command '{cli_command}' without arguments is not allowed by the request allow-list"
-            ));
+        // Explicitly allow-listing the command without args
+        if exact_args.is_none() && initial_args.is_none() {
+            return Ok(());
         }
+
+        if exact_args.is_some() || initial_args.is_some() {
+            allow_list_includes_requests_requiring_args = true;
+        }
+    }
+
+    if allow_list_includes_requests_requiring_args {
+        Err(format!(
+            "Validation error: CLI command '{cli_command}' without arguments is not allowed by the request allow-list"
+        ))?;
     }
     Ok(())
 }
@@ -279,5 +290,31 @@ mod tests {
                 "Unexpected validation result: {error_message:?}"
             );
         }
+    }
+
+    #[test]
+    fn validate_cli_request_allows_no_args_if_allow_listed() {
+        let cli_request = serde_json::json!({
+            "command": "echo"
+        });
+        let allow_listed_cli_requests = Some(&Vec::from([
+            serde_json::json!({
+                "command": "echo",
+                "initialArgs": [
+                    "Hello",
+                    "world!"
+                ]
+            }),
+            serde_json::json!({
+                "command": "echo"
+            }),
+        ]));
+
+        let result = validate_cli_request(&cli_request, allow_listed_cli_requests);
+        assert!(
+            result.is_ok(),
+            "Unexpected validation error: {:?}",
+            result.unwrap_err()
+        );
     }
 }
