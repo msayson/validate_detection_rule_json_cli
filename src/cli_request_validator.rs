@@ -102,3 +102,159 @@ pub fn validate_cli_request(
         allow_listed_cli_requests_matching_cli_command,
     )
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn validate_cli_request_passes_exact_allowed_cli_command_args() {
+        let cli_request = serde_json::json!({
+            "command": "echo",
+            "args": [
+                "Hello",
+                "world!"
+            ]
+        });
+        let allow_listed_cli_requests = Some(&Vec::from([serde_json::json!({
+            "command": "echo",
+            "exactArgs": [
+                "Hello",
+                "world!"
+            ]
+        })]));
+
+        let result = validate_cli_request(&cli_request, allow_listed_cli_requests);
+        assert!(
+            result.is_ok(),
+            "Unexpected validation error: {:?}",
+            result.unwrap_err()
+        );
+    }
+
+    #[test]
+    fn validate_cli_request_rejects_mismatch_to_required_exact_args() {
+        let allow_listed_cli_requests = Some(&Vec::from([serde_json::json!({
+            "command": "echo",
+            "exactArgs": [
+                "Hello",
+                "world!"
+            ]
+        })]));
+
+        for cli_request in [
+            serde_json::json!({
+                "command": "echo",
+                "args": [
+                    "Hello"
+                ]
+            }),
+            serde_json::json!({
+                "command": "echo",
+                "args": [
+                    "Hello",
+                    "world!",
+                    "My name is HAL."
+                ]
+            }),
+            serde_json::json!({
+                "command": "echo",
+                "args": [
+                    "Goodbye"
+                ]
+            }),
+            serde_json::json!({
+                "command": "echo",
+                "args": []
+            }),
+        ] {
+            let result = validate_cli_request(&cli_request, allow_listed_cli_requests);
+            assert!(
+                result.is_err(),
+                "Unexpected validation result for CLI request {cli_request:?}: {result:?}"
+            );
+            let error_message = result.unwrap_err();
+            assert!(
+                error_message.contains("is not allowed by the request allow-list"),
+                "Unexpected validation result: {error_message:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn validate_cli_request_passes_matching_allowed_cli_command_args() {
+        let allow_listed_cli_requests = Some(&Vec::from([serde_json::json!({
+            "command": "echo",
+            "initialArgs": [
+                "Hello",
+                "world!"
+            ]
+        })]));
+
+        for cli_request in [
+            serde_json::json!({
+                "command": "echo",
+                "args": [
+                    "Hello",
+                    "world!"
+                ]
+            }),
+            serde_json::json!({
+                "command": "echo",
+                "args": [
+                    "Hello",
+                    "world!",
+                    "My name is HAL."
+                ]
+            }),
+        ] {
+            let result = validate_cli_request(&cli_request, allow_listed_cli_requests);
+            assert!(
+                result.is_ok(),
+                "Unexpected validation error: {:?}",
+                result.unwrap_err()
+            );
+        }
+    }
+
+    #[test]
+    fn validate_cli_request_rejects_missing_required_initial_args() {
+        let allow_listed_cli_requests = Some(&Vec::from([serde_json::json!({
+            "command": "echo",
+            "initialArgs": [
+                "Hello",
+                "world!"
+            ]
+        })]));
+
+        for cli_request in [
+            serde_json::json!({
+                "command": "echo",
+                "args": [
+                    "Hello"
+                ]
+            }),
+            serde_json::json!({
+                "command": "echo",
+                "args": [
+                    "Goodbye"
+                ]
+            }),
+            serde_json::json!({
+                "command": "echo",
+                "args": []
+            }),
+        ] {
+            let result = validate_cli_request(&cli_request, allow_listed_cli_requests);
+            assert!(
+                result.is_err(),
+                "Unexpected validation result for CLI request {cli_request:?}: {result:?}"
+            );
+            let error_message = result.unwrap_err();
+            assert!(
+                error_message.contains("is not allowed by the request allow-list"),
+                "Unexpected validation result: {error_message:?}"
+            );
+        }
+    }
+}
