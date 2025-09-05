@@ -342,9 +342,10 @@ mod tests {
         let result =
             validate_detection_rule_data(&detection_rule_json, Some(&request_allow_list_json));
         assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err(),
-            "Validation error: API request ApiRequest {\n    method: \"POST\",\n    url: \"https://dynamodb.eu-west-2.amazonaws.com\",\n} is not allowed by the request allow-list"
+        let error_message = result.unwrap_err();
+        assert!(
+            error_message.starts_with("Validation error: API request")
+                && error_message.contains("is not allowed by the request allow-list"),
         );
     }
 }

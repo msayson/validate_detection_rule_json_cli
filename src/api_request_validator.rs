@@ -1,9 +1,45 @@
 use serde::{Deserialize, Serialize};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt,
+};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Deserialize, Serialize)]
 struct ApiRequest {
     method: String,
     url: String,
+    headers: Option<HashMap<String, String>>,
+}
+
+impl fmt::Debug for ApiRequest {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.headers {
+            Some(headers) => f
+                .debug_struct("ApiRequest")
+                .field("method", &self.method)
+                .field("url", &self.url)
+                .field("headers", &headers)
+                .finish(),
+            None => f
+                .debug_struct("ApiRequest")
+                .field("method", &self.method)
+                .field("url", &self.url)
+                .finish(),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct AllowListedValuesForHeader {
+    header: String,
+    allowed_values: HashSet<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct AllowListedApiRequest {
+    method: String,
+    url: String,
+    allowed_values_for_header: Option<Vec<AllowListedValuesForHeader>>,
 }
 
 fn parse_api_request(request: &serde_json::Value) -> Result<ApiRequest, String> {
@@ -11,6 +47,47 @@ fn parse_api_request(request: &serde_json::Value) -> Result<ApiRequest, String> 
         format!("Validation error: Failed to parse API request from JSON {request:#?}, error: {e}")
     })?;
     Ok(api_request)
+}
+
+fn parse_allow_listed_api_request(
+    request: &serde_json::Value,
+) -> Result<AllowListedApiRequest, String> {
+    let allow_listed_request: AllowListedApiRequest = serde_json::from_value(request.clone()).map_err(|e| {
+        format!("Validation error: Failed to parse allow-listed API request from JSON {request:#?}, error: {e}")
+    })?;
+    Ok(allow_listed_request)
+}
+
+fn validate_api_headers_match_allow_list(
+    request: &ApiRequest,
+    allow_listed_request: &AllowListedApiRequest,
+) -> Result<(), String> {
+    if request.headers.is_none() || allow_listed_request.allowed_values_for_header.is_none() {
+        return Ok(());
+    }
+    let request_headers = request.headers.as_ref().unwrap();
+
+    let allowed_values_for_headers = allow_listed_request
+        .allowed_values_for_header
+        .as_ref()
+        .unwrap();
+    for allowed_values_for_header in allowed_values_for_headers {
+        let header: &String = &allowed_values_for_header.header;
+        let allowed_values: &HashSet<String> = &allowed_values_for_header.allowed_values;
+
+        if !request_headers.contains_key(header) {
+            continue;
+        }
+        let request_header_value = request_headers.get(header).unwrap();
+        if !allowed_values.contains(request_header_value) {
+            return Err(format!(
+                "Validation error: '{} {}' API requests with header value '{header}: {request_header_value}' is not allowed by the request allow-list, which only allows values: {allowed_values:#?} for this header",
+                request.method, request.url
+            ));
+        }
+    }
+
+    Ok(())
 }
 
 /// Validates an API request against an allow-list of API requests.
@@ -34,12 +111,14 @@ pub fn validate_api_request(
 
     if let Some(allow_listed_requests) = allow_listed_api_requests {
         for allow_listed_request in allow_listed_requests {
-            let parsed_allow_listed_request = parse_api_request(allow_listed_request)?;
+            let parsed_allow_listed_request = parse_allow_listed_api_request(allow_listed_request)?;
             if parsed_request.method == parsed_allow_listed_request.method
                 && parsed_request.url == parsed_allow_listed_request.url
             {
-                // TODO: Validate headers against allow-list
-                return Ok(());
+                return validate_api_headers_match_allow_list(
+                    &parsed_request,
+                    &parsed_allow_listed_request,
+                );
             }
         }
         Err(format!(
@@ -180,6 +259,61 @@ mod tests {
             api_request_json.clone(),
         ];
         let result = validate_api_request(&api_request_json, Some(&allow_listed_api_requests));
+        assert!(
+            result.is_ok(),
+            "Unexpected validation error: {:?}",
+            result.err()
+        );
+    }
+
+    #[test]
+    fn test_validate_api_request_rejects_if_header_value_not_in_allow_list() {
+        let api_request_json: serde_json::Value = serde_json::json!({
+            "method": "POST",
+            "url": "https://dynamodb.eu-west-2.amazonaws.com",
+            "headers": {
+                "X-Amz-Target": "DynamoDB_20120810.DescribeContinuousBackups"
+            }
+        });
+        let request_allow_list_json: Vec<serde_json::Value> = vec![serde_json::json!({
+            "method": "POST",
+            "url": "https://dynamodb.eu-west-2.amazonaws.com",
+            "allowed_values_for_header": [
+                {
+                    "header": "X-Amz-Target",
+                    "allowed_values": ["DynamoDB_20120810.ListTables"]
+                }
+            ]
+        })];
+        let result = validate_api_request(&api_request_json, Some(&request_allow_list_json));
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            "Validation error: 'POST https://dynamodb.eu-west-2.amazonaws.com' API requests with header value 'X-Amz-Target: DynamoDB_20120810.DescribeContinuousBackups' is not allowed by the request allow-list, which only allows values: {\n    \"DynamoDB_20120810.ListTables\",\n} for this header"
+        );
+    }
+
+    #[test]
+    fn test_validate_api_request_accepts_if_header_value_in_allow_list() {
+        let api_request_json: serde_json::Value = serde_json::json!({
+            "method": "POST",
+            "url": "https://dynamodb.eu-west-2.amazonaws.com",
+            "headers": {
+                "X-Amz-Target": "DynamoDB_20120810.ListTables",
+                "Content-Type": "application/x-amz-json-1.0"
+            }
+        });
+        let request_allow_list_json: Vec<serde_json::Value> = vec![serde_json::json!({
+            "method": "POST",
+            "url": "https://dynamodb.eu-west-2.amazonaws.com",
+            "allowed_values_for_header": [
+                {
+                    "header": "X-Amz-Target",
+                    "allowed_values": ["DynamoDB_20120810.ListTables"]
+                }
+            ]
+        })];
+        let result = validate_api_request(&api_request_json, Some(&request_allow_list_json));
         assert!(
             result.is_ok(),
             "Unexpected validation error: {:?}",
