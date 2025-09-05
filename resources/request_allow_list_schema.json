@@ -46,6 +46,13 @@
                 "url": {
                     "type": "string"
                 },
+                "allowedHeaderValues": {
+                    "description": "Allow-listed header values",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/allowedValuesForHeader"
+                    }
+                },
                 "description": {
                     "description": "Description of the API method",
                     "type": "string"
@@ -58,7 +65,7 @@
             "additionalProperties": false
         },
         "allowedCliCommand": {
-            "description": "A allow-listed CLI command",
+            "description": "An allow-listed CLI command",
             "type": "object",
             "properties": {
                 "command": {
@@ -117,6 +124,30 @@
                     }
                 }
             ]
+        },
+        "allowedValuesForHeader": {
+            "description": "Allow-listed values for a specific header",
+            "type": "object",
+            "properties": {
+                "header": {
+                    "type": "string"
+                },
+                "allowedValues": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "header",
+                "allowedValues"
+            ],
+            "additionalProperties": false
         }
     }
 }

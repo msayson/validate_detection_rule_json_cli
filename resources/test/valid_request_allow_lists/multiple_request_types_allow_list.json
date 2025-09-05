@@ -25,7 +25,15 @@
     "allowedApiMethods": [
         {
             "method": "POST",
-            "url": "https://dynamodb.eu-west-2.amazonaws.com"
+            "url": "https://dynamodb.eu-west-2.amazonaws.com",
+            "allowedHeaderValues": [
+                {
+                    "header": "X-Amz-Target",
+                    "allowedValues": [
+                        "DynamoDB_20120810.DescribeContinuousBackups"
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -38,6 +38,7 @@ pub fn validate_api_request(
             if parsed_request.method == parsed_allow_listed_request.method
                 && parsed_request.url == parsed_allow_listed_request.url
             {
+                // TODO: Validate headers against allow-list
                 return Ok(());
             }
         }
@@ -156,7 +157,10 @@ mod tests {
     fn test_validate_api_request_accepts_if_in_allow_list() {
         let api_request_json: serde_json::Value = serde_json::json!({
             "method": TEST_API_METHOD,
-            "url": TEST_API_URL
+            "url": TEST_API_URL,
+            "headers": {
+                "TestHeader": "TestHeaderValue"
+            }
         });
 
         let other_url = "https://example.com/api/other_resource";
