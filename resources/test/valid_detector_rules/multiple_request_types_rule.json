@@ -1,0 +1,63 @@
+{
+    "id": "Namespace::TestMultipleRequestTypesRule",
+    "name": "Test Rule",
+    "description": "This is a test detection rule including CLI and API requests.",
+    "version": "0.1.2",
+    "steps": [
+        {
+            "id": "Test step 1",
+            "description": "This is a no-op step printing a message to console.",
+            "requestType": "cli",
+            "request": {
+                "command": "echo",
+                "args": [
+                    "Starting test detector..."
+                ]
+            }
+        },
+        {
+            "id": "Test step 2",
+            "description": "List AWS S3 buckets in the eu-west-2 region.",
+            "requestType": "cli",
+            "request": {
+                "command": "aws",
+                "args": [
+                    "s3",
+                    "ls",
+                    "--region eu-west-2",
+                    "--profile test-aws-detector"
+                ]
+            }
+        },
+        {
+            "id": "Test step 3",
+            "description": "List AWS DynamoDB tables in the eu-west-2 region.",
+            "requestType": "cli",
+            "request": {
+                "command": "aws",
+                "args": [
+                    "dynamodb",
+                    "list-tables",
+                    "--region eu-west-2",
+                    "--profile test-aws-detector"
+                ]
+            }
+        },
+        {
+            "id": "Test step 4",
+            "description": "Check whether backups are enabled for a given AWS DynamoDB table.",
+            "requestType": "api",
+            "request": {
+                "method": "POST",
+                "url": "https://dynamodb.eu-west-2.amazonaws.com",
+                "headers": {
+                    "Content-Type": "application/x-amz-json-1.0",
+                    "X-Amz-Target": "DynamoDB_20120810.DescribeContinuousBackups"
+                },
+                "body": {
+                    "TableName": "TestTable"
+                }
+            }
+        }
+    ]
+}

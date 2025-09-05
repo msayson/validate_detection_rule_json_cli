@@ -7,8 +7,9 @@ struct ApiRequest {
 }
 
 fn parse_api_request(request: &serde_json::Value) -> Result<ApiRequest, String> {
-    let api_request: ApiRequest = serde_json::from_value(request.clone())
-        .map_err(|e| format!("Failed to parse API request from JSON {request:#?}, error: {e}"))?;
+    let api_request: ApiRequest = serde_json::from_value(request.clone()).map_err(|e| {
+        format!("Validation error: Failed to parse API request from JSON {request:#?}, error: {e}")
+    })?;
     Ok(api_request)
 }
 
@@ -41,11 +42,11 @@ pub fn validate_api_request(
             }
         }
         Err(format!(
-            "API request {parsed_request:#?} is not allowed by the request allow-list",
+            "Validation error: API request {parsed_request:#?} is not allowed by the request allow-list",
         ))
     } else {
         Err(format!(
-            "API request {parsed_request:#?} is not allowed as no API requests are allow-listed"
+            "Validation error: API request {parsed_request:#?} is not allowed as no API requests are allow-listed"
         ))
     }
 }
@@ -98,7 +99,7 @@ mod tests {
         assert_eq!(
             optional_parsed_api_request.unwrap_err(),
             format!(
-                "Failed to parse API request from JSON {invalid_api_request_json:#?}, error: missing field `method`"
+                "Validation error: Failed to parse API request from JSON {invalid_api_request_json:#?}, error: missing field `method`"
             )
         );
     }
@@ -114,7 +115,7 @@ mod tests {
         assert_eq!(
             result.unwrap_err(),
             format!(
-                "API request ApiRequest {{\n    method: \"{TEST_API_METHOD}\",\n    url: \"{TEST_API_URL}\",\n}} is not allowed as no API requests are allow-listed"
+                "Validation error: API request ApiRequest {{\n    method: \"{TEST_API_METHOD}\",\n    url: \"{TEST_API_URL}\",\n}} is not allowed as no API requests are allow-listed"
             )
         );
     }
@@ -146,7 +147,7 @@ mod tests {
         assert_eq!(
             result.unwrap_err(),
             format!(
-                "API request ApiRequest {{\n    method: \"{TEST_API_METHOD}\",\n    url: \"{TEST_API_URL}\",\n}} is not allowed by the request allow-list"
+                "Validation error: API request ApiRequest {{\n    method: \"{TEST_API_METHOD}\",\n    url: \"{TEST_API_URL}\",\n}} is not allowed by the request allow-list"
             )
         );
     }

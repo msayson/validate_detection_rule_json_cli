@@ -1,0 +1,31 @@
+{
+    "id": "Test::MultipleRequestTypesAllowList",
+    "description": "This is a test request allow-list for API and CLI requests.",
+    "allowedCliCommands": [
+        {
+            "command": "echo"
+        },
+        {
+            "command": "aws",
+            "exactArgs": [
+                "s3",
+                "ls",
+                "--region eu-west-2",
+                "--profile test-aws-detector"
+            ]
+        },
+        {
+            "command": "aws",
+            "initialArgs": [
+                "dynamodb",
+                "list-tables"
+            ]
+        }
+    ],
+    "allowedApiMethods": [
+        {
+            "method": "POST",
+            "url": "https://dynamodb.eu-west-2.amazonaws.com"
+        }
+    ]
+}

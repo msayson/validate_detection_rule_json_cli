@@ -1,7 +1,7 @@
 {
-    "id": "Namespace::TestRule1",
+    "id": "Namespace::TestRuleWithUnsupportedProperties",
     "name": "Test Rule",
-    "description": "This is a test detection rule.",
+    "description": "This is a test detection rule with unsupported properties.",
     "version": "0.1",
     "steps": [
         {

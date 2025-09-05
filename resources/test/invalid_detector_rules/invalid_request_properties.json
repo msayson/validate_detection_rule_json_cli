@@ -1,7 +1,7 @@
 {
-    "id": "Namespace::TestRule1",
+    "id": "Namespace::TestIncompatibleRequestPropertiesRule",
     "name": "Test Rule",
-    "description": "This is a test detection rule.",
+    "description": "This is a test detection rule with invalid properties for a given request type.",
     "version": "0.1",
     "steps": [
         {

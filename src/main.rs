@@ -94,9 +94,9 @@ mod tests {
     #[test]
     fn validate_file_passes_valid_request_allow_list() {
         let detection_rule_file_path =
-            Path::new("resources/test/valid_detector_rules/simple_no_op_rule.json");
+            Path::new("resources/test/valid_detector_rules/multiple_request_types_rule.json");
         let request_allow_list_file_path = Path::new(
-            "resources/test/valid_request_allow_lists/simple_cli_request_allow_list.json",
+            "resources/test/valid_request_allow_lists/multiple_request_types_allow_list.json",
         );
         let input_args = vec![
             FIRST_ARG.to_string(),

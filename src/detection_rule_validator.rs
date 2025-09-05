@@ -163,7 +163,7 @@ mod tests {
     #[test]
     fn validate_detection_rule_data_passes_valid_file() {
         let detection_rule_json: serde_json::Value = parse_json_from_filepath(
-            "resources/test/valid_detector_rules/simple_no_op_rule.json",
+            "resources/test/valid_detector_rules/multiple_request_types_rule.json",
             "detection rule",
         )
         .unwrap();
@@ -233,12 +233,12 @@ mod tests {
     #[test]
     fn validate_detection_rule_data_passes_valid_request_allow_list() {
         let detection_rule_json: serde_json::Value = parse_json_from_filepath(
-            "resources/test/valid_detector_rules/simple_no_op_rule.json",
+            "resources/test/valid_detector_rules/multiple_request_types_rule.json",
             "detection rule",
         )
         .unwrap();
         let request_allow_list_json: serde_json::Value = parse_json_from_filepath(
-            "resources/test/valid_request_allow_lists/simple_cli_request_allow_list.json",
+            "resources/test/valid_request_allow_lists/multiple_request_types_allow_list.json",
             "request allow-list",
         )
         .unwrap();
@@ -271,6 +271,52 @@ mod tests {
         assert_eq!(
             result.unwrap_err(),
             "Validation error: CLI command 'ls' is not allowed, allow-listed CLI commands: [\"echo\"]"
+        );
+    }
+
+    #[test]
+    fn validate_detection_rule_data_rejects_unallowed_api_request() {
+        let detection_rule_json: serde_json::Value = parse_json_from_filepath(
+            "resources/test/valid_detector_rules/multiple_request_types_rule.json",
+            "detection rule",
+        )
+        .unwrap();
+        let request_allow_list_json: serde_json::Value = serde_json::json!({
+            "id": "Test::RequestAllowList",
+            "description": "This is a test request allow-list.",
+            "allowedApiMethods": [
+                {
+                    "method": "GET",
+                    "url": "/api/v1/resource"
+                }
+            ],
+            "allowedCliCommands": [
+                {
+                    "command": "echo"
+                },
+                {
+                    "command": "aws",
+                    "initialArgs": [
+                        "s3",
+                        "ls"
+                    ]
+                },
+                {
+                    "command": "aws",
+                    "initialArgs": [
+                        "dynamodb",
+                        "list-tables"
+                    ]
+                }
+            ]
+        });
+
+        let result =
+            validate_detection_rule_data(&detection_rule_json, Some(&request_allow_list_json));
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            "Validation error: API request ApiRequest {\n    method: \"POST\",\n    url: \"https://dynamodb.eu-west-2.amazonaws.com\",\n} is not allowed by the request allow-list"
         );
     }
 }
