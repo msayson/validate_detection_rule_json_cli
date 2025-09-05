@@ -67,7 +67,8 @@ mod tests {
 
     #[test]
     fn validate_file_passes_valid_file() {
-        let file_path = Path::new("resources/test/valid_detector_rules/simple_no_op_rule.json");
+        let file_path =
+            Path::new("resources/test/valid_detector_rules/multiple_request_types_rule.json");
         let input_args = vec![
             FIRST_ARG.to_string(),
             file_path.to_str().unwrap().to_string(),

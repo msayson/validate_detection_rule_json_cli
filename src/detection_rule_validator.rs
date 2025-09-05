@@ -211,7 +211,7 @@ mod tests {
     #[test]
     fn validate_detection_rule_data_rejects_invalid_request_allow_list() {
         let detection_rule_json: serde_json::Value = parse_json_from_filepath(
-            "resources/test/valid_detector_rules/simple_no_op_rule.json",
+            "resources/test/valid_detector_rules/multiple_request_types_rule.json",
             "detection rule",
         )
         .unwrap();
@@ -254,16 +254,44 @@ mod tests {
 
     #[test]
     fn validate_detection_rule_data_rejects_unallowed_cli_command() {
-        let detection_rule_json: serde_json::Value = parse_json_from_filepath(
-            "resources/test/valid_detector_rules/multiple_cli_requests_rule.json",
-            "detection rule",
-        )
-        .unwrap();
-        let request_allow_list_json: serde_json::Value = parse_json_from_filepath(
-            "resources/test/valid_request_allow_lists/exact_cli_args_allow_list.json",
-            "request allow-list",
-        )
-        .unwrap();
+        let detection_rule_json: serde_json::Value = serde_json::json!({
+            "id": "Test::RuleExactMatchCliCommandArgs",
+            "name": "Test Rule",
+            "description": "This is a test detection rule matching exact CLI command arguments.",
+            "version": "0.1.2",
+            "steps": [
+                {
+                    "id": "Test step 1",
+                    "requestType": "cli",
+                    "request": {
+                        "command": "echo",
+                        "args": [
+                            "Hello",
+                            "world!"
+                        ]
+                    }
+                },
+                {
+                    "id": "Test step 2",
+                    "requestType": "cli",
+                    "request": {
+                        "command": "ls"
+                    }
+                }
+            ]
+        });
+        let request_allow_list_json: serde_json::Value = serde_json::json!({
+            "id": "Test::RequestExactCliArgsAllowList",
+            "allowedCliCommands": [
+                {
+                    "command": "echo",
+                    "exactArgs": [
+                        "Hello",
+                        "world!"
+                    ]
+                }
+            ]
+        });
 
         let result =
             validate_detection_rule_data(&detection_rule_json, Some(&request_allow_list_json));
