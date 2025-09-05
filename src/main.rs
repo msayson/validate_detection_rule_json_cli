@@ -3,6 +3,7 @@
 
 use std::env;
 
+mod api_request_validator;
 mod cli_argument_parser;
 mod cli_request_validator;
 mod detection_rule_validator;

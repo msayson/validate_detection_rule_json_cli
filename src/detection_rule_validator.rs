@@ -1,3 +1,4 @@
+use crate::api_request_validator::validate_api_request;
 use crate::cli_request_validator::validate_cli_request;
 
 const DETECTION_RULE_SCHEMA: &str = include_str!("../resources/detection_rule_schema.json");
@@ -63,6 +64,9 @@ fn validate_detection_rule_matches_request_allow_list(
     }
     // Validate detection rule schema against the request allow-list
     let request_allow_list_json: &serde_json::Value = optional_request_allow_list_json.unwrap();
+    let allow_listed_api_requests: Option<&Vec<serde_json::Value>> = request_allow_list_json
+        .get("allowedApiMethods")
+        .and_then(|v| v.as_array());
     let allow_listed_cli_requests: Option<&Vec<serde_json::Value>> = request_allow_list_json
         .get("allowedCliCommands")
         .and_then(|v| v.as_array());
@@ -76,10 +80,15 @@ fn validate_detection_rule_matches_request_allow_list(
     for step in detection_rule_steps {
         let step_request_type = step.get("requestType").unwrap().as_str().unwrap();
         let request = step.get("request").unwrap();
-        if step_request_type == "cli" {
+        if step_request_type == "api" {
+            validate_api_request(request, allow_listed_api_requests)?;
+        } else if step_request_type == "cli" {
             validate_cli_request(request, allow_listed_cli_requests)?;
+        } else {
+            return Err(format!(
+                "Validation error: Unsupported requestType '{step_request_type}' in detection rule step"
+            ));
         }
-        // TODO: validate API request against allow-list
     }
     Ok(())
 }
