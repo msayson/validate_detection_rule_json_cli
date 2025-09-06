@@ -5,7 +5,7 @@
     "version": "0.1",
     "steps": [
         {
-            "id": "Test step 1",
+            "id": "echo",
             "description": "This is a no-op step.",
             "requestType": "api",
             "request": {

@@ -261,7 +261,7 @@ mod tests {
             "version": "0.1.2",
             "steps": [
                 {
-                    "id": "Test step 1",
+                    "id": "echo",
                     "requestType": "cli",
                     "request": {
                         "command": "echo",
@@ -272,7 +272,7 @@ mod tests {
                     }
                 },
                 {
-                    "id": "Test step 2",
+                    "id": "ls",
                     "requestType": "cli",
                     "request": {
                         "command": "ls"
@@ -378,6 +378,36 @@ mod tests {
             result.is_ok(),
             "Unexpected validation error: {:?}",
             result.unwrap_err()
+        );
+    }
+
+    #[test]
+    fn validate_detection_rule_data_rejects_invalid_step_id() {
+        let detection_rule_json: serde_json::Value = serde_json::json!({
+            "id": "Test::StepOutputsRule",
+            "name": "Test Rule",
+            "version": "0.1.2",
+            "steps": [
+                {
+                    "id": "Invalid Step ID!",
+                    "description": "List AWS DynamoDB tables in the given region.",
+                    "requestType": "cli",
+                    "request": {
+                        "command": "aws",
+                        "args": [
+                            "dynamodb",
+                            "list-tables"
+                        ]
+                    }
+                }
+            ]
+        });
+
+        let result = validate_detection_rule_data(&detection_rule_json, None);
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            "Validation error for detection rule: \"Invalid Step ID!\" does not match \"^[a-zA-Z0-9_]+$\""
         );
     }
 }

@@ -1,7 +1,7 @@
 {
-    "id": "Test::StepInputsAndOutputsRule",
+    "id": "Test::StepOutputsRule",
     "name": "Test Rule",
-    "description": "This is a test detection rule with various types of step inputs and outputs.",
+    "description": "This is a test detection rule with various types of step outputs.",
     "version": "0.1.2",
     "steps": [
         {

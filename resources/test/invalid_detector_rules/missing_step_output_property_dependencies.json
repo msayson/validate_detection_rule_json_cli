@@ -19,11 +19,11 @@
             },
             "outputs": [
                 {
-                    "id": "BucketArns",
-                    "description": "The ARNs of the S3 buckets.",
-                    "source": "{{ step.list_s3_buckets.response.body }}",
+                    "id": "bucket_names",
+                    "description": "The S3 bucket names",
+                    "source": "{{ step.list_s3_buckets.response }}",
                     "sourceFormat": "json",
-                    "parsingPattern": ".Buckets[].Arn"
+                    "parsingPattern": ".Buckets[].Name"
                 }
             ]
         }

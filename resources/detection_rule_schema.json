@@ -40,7 +40,8 @@
             "properties": {
                 "id": {
                     "description": "Unique identifier for the step",
-                    "type": "string"
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9_]+$"
                 },
                 "description": {
                     "description": "Description of the step",
@@ -164,7 +165,8 @@
             "properties": {
                 "id": {
                     "description": "Step output identifier",
-                    "type": "string"
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9_]+$"
                 },
                 "description": {
                     "description": "Description of the output",

@@ -5,7 +5,7 @@
     "version": "0.1.2",
     "steps": [
         {
-            "id": "Test step 1",
+            "id": "echo",
             "description": "This is a no-op step printing a message to console.",
             "requestType": "cli",
             "request": {
@@ -16,7 +16,7 @@
             }
         },
         {
-            "id": "Test step 2",
+            "id": "list_s3_buckets",
             "description": "List AWS S3 buckets in the eu-west-2 region.",
             "requestType": "cli",
             "request": {
@@ -30,7 +30,7 @@
             }
         },
         {
-            "id": "Test step 3",
+            "id": "list_dynamodb_tables",
             "description": "List AWS DynamoDB tables in the eu-west-2 region.",
             "requestType": "cli",
             "request": {
@@ -44,7 +44,7 @@
             }
         },
         {
-            "id": "Test step 4",
+            "id": "check_dynamodb_backup_config",
             "description": "Check whether backups are enabled for a given AWS DynamoDB table.",
             "requestType": "api",
             "request": {
