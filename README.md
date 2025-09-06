@@ -34,7 +34,7 @@ Given the following detection rule at `./resources/test_detection_rule.json`:
     "version": "0.1.2",
     "steps": [
         {
-            "id": "Test step 1",
+            "id": "test_step_1",
             "description": "This is a no-op step.",
             "requestType": "cli",
             "request": {
@@ -66,7 +66,7 @@ Given the following detection rule at `./resources/test_detection_rule.json`:
     "version": "0.1.2",
     "steps": [
         {
-            "id": "Test step 1",
+            "id": "test_step_1",
             "description": "This is a no-op step.",
             "requestType": "cli",
             "request": {
@@ -78,7 +78,7 @@ Given the following detection rule at `./resources/test_detection_rule.json`:
             }
         },
         {
-            "id": "Test step 2",
+            "id": "test_step_2",
             "description": "List files in current directory.",
             "requestType": "cli",
             "request": {
@@ -125,7 +125,7 @@ Given the following detection rule at `./resources/test_detection_rule.json`:
     "version": "0.1",
     "steps": [
         {
-            "id": "Test step 1",
+            "id": "test_step_1",
             "description": "This is a no-op step.",
             "requestType": "cli",
             "request": {
