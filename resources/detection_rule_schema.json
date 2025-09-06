@@ -46,13 +46,6 @@
                     "description": "Description of the step",
                     "type": "string"
                 },
-                "inputs": {
-                    "description": "The inputs to the step",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/$defs/stepInput"
-                    }
-                },
                 "requestType": {
                     "description": "Whether the step is an API request or a CLI command",
                     "type": "string",
@@ -162,25 +155,6 @@
             },
             "required": [
                 "command"
-            ],
-            "additionalProperties": false
-        },
-        "stepInput": {
-            "description": "An input to a detection rule step",
-            "type": "object",
-            "properties": {
-                "id": {
-                    "description": "Step input identifier",
-                    "type": "string"
-                },
-                "source": {
-                    "description": "Source of the input, eg. an environment variable, or a prior step's output",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "id",
-                "source"
             ],
             "additionalProperties": false
         },
