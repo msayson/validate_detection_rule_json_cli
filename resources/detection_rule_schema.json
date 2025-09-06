@@ -46,6 +46,13 @@
                     "description": "Description of the step",
                     "type": "string"
                 },
+                "inputs": {
+                    "description": "The inputs to the step",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/stepInput"
+                    }
+                },
                 "requestType": {
                     "description": "Whether the step is an API request or a CLI command",
                     "type": "string",
@@ -57,6 +64,13 @@
                 "request": {
                     "description": "The request definition",
                     "type": "object"
+                },
+                "outputs": {
+                    "description": "The outputs of the step",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/stepOutput"
+                    }
                 }
             },
             "required": [
@@ -148,6 +162,67 @@
             },
             "required": [
                 "command"
+            ],
+            "additionalProperties": false
+        },
+        "stepInput": {
+            "description": "An input to a detection rule step",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "Step input identifier",
+                    "type": "string"
+                },
+                "source": {
+                    "description": "Source of the input, eg. an environment variable, or a prior step's output",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "source"
+            ],
+            "additionalProperties": false
+        },
+        "stepOutput": {
+            "description": "An output of a detection rule step",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "Step output identifier",
+                    "type": "string"
+                },
+                "source": {
+                    "description": "Source of the output, eg. the response of a given step's request, or an environment variable",
+                    "type": "string"
+                },
+                "sourceFormat": {
+                    "description": "Format of the source",
+                    "type": "string",
+                    "enum": [
+                        "json",
+                        "text"
+                    ]
+                },
+                "parsingMechanism": {
+                    "description": "Mechanism to extract the output from the source",
+                    "type": "string",
+                    "enum": [
+                        "jsonPath",
+                        "regex"
+                    ]
+                },
+                "parsingPattern": {
+                    "description": "Pattern to extract the output from the source",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "source",
+                "sourceFormat",
+                "parsingMechanism",
+                "parsingPattern"
             ],
             "additionalProperties": false
         }
