@@ -51,21 +51,6 @@ mod tests {
     const FIRST_ARG: &str = "./validate_detection_rule_json";
 
     #[test]
-    fn validate_file_rejects_nonexistent_file() {
-        let invalid_file_path: &str = "/not_real_dir/not_real_file.json";
-        let input_args = vec![FIRST_ARG.to_string(), invalid_file_path.to_string()];
-        let result = validate_file(&input_args);
-        assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err(),
-            format!(
-                "Problem parsing detection rule filepath: {}",
-                file_parser::INVALID_OR_UNSAFE_PATH_MSG
-            )
-        );
-    }
-
-    #[test]
     fn validate_file_passes_valid_file() {
         let file_path =
             Path::new("resources/test/valid_detector_rules/multiple_request_types_rule.json");

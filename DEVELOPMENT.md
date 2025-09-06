@@ -8,13 +8,15 @@
 3. Run `rustc --version` to validate Rust has been successfully installed
 4. Run `cargo --version` to validate Cargo has been successfully installed
 5. Run `cargo install --no-default-features --force cargo-make` to install cargo-make with minimal features, to enable defining and running custom tasks such as chained cargo commands to simplify validations during development
-6. Run `cargo install cargo-audit --locked` to install cargo-audit, to enable auditing vulnerabilities in dependencies via `cargo audit`
+6. Run `cargo install cargo-llvm-cov` to enable evaluating test coverage
+7. Run `cargo install cargo-audit --locked` to install cargo-audit, to enable auditing vulnerabilities in dependencies via `cargo audit`
 
 ### Building / testing the package locally
 
 * `cargo make release-check` runs fmt check, build, test, and clippy - requires installing cargo-make, see first-time set-up steps above
 * `cargo build` builds the executable so that it can be run via `./target/debug/validate_detection_rule_json`
 * `cargo test` runs all unit tests
+* `cargo llvm-cov --html` runs all unit tests and generates an HTML test coverage report
 * `cargo clippy --all-targets -- -D warnings` evaluates code for common style issues, failing if there are any warnings/errors
 * `./target/debug/validate_detection_rule_json [OPTIONS]` runs the locally built executable with the given options, if it has been set up via `cargo build`
   * Eg. `./target/debug/validate_detection_rule_json --help` displays the CLI's help text

@@ -36,9 +36,70 @@ pub fn parse_filepath(input_filepath: &str) -> Result<PathBuf, &'static str> {
 pub fn parse_json_file(path: &Path, file_type: &str) -> Result<serde_json::Value, String> {
     println!("Parsing {file_type} file at path {}", path.display());
 
-    let detection_rule_contents =
+    let file_contents =
         fs::read_to_string(path).map_err(|err| format!("Error reading {file_type} file: {err}"))?;
-    let detection_rule_json: serde_json::Value = serde_json::from_str(&detection_rule_contents)
+    let contents_json: serde_json::Value = serde_json::from_str(&file_contents)
         .map_err(|err| format!("Error parsing {file_type} file as JSON: {err}"))?;
-    Ok(detection_rule_json)
+    Ok(contents_json)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_filepath_passes_valid_filepath() {
+        let filepath = "resources/test/valid_detector_rules/multiple_request_types_rule.json";
+        let result = parse_filepath(filepath);
+        assert!(
+            result.is_ok(),
+            "Expected Ok, got Err: {}",
+            result.unwrap_err()
+        );
+    }
+
+    #[test]
+    fn parse_filepath_rejects_directory() {
+        let filepath = "resources/test/valid_detector_rules/";
+        let result = parse_filepath(filepath);
+        assert!(result.is_err());
+
+        let error_msg = result.unwrap_err();
+        assert_eq!(error_msg, DIR_FILEPATH_MSG);
+    }
+
+    #[test]
+    fn parse_filepath_rejects_invalid_path() {
+        let filepath = "/not_real_dir/not_real_file.json";
+        let result = parse_filepath(filepath);
+        assert!(result.is_err());
+
+        let error_msg = result.unwrap_err();
+        assert_eq!(error_msg, INVALID_OR_UNSAFE_PATH_MSG);
+    }
+
+    #[test]
+    fn parse_json_file_passes_valid_json() {
+        let filepath = "resources/test/valid_detector_rules/multiple_request_types_rule.json";
+        let parsed_filepath = parse_filepath(filepath).unwrap();
+        let parsed_json_contents = parse_json_file(&parsed_filepath, "detection rule");
+        assert!(
+            parsed_json_contents.is_ok(),
+            "Expected Ok, got Err: {}",
+            parsed_json_contents.unwrap_err()
+        );
+    }
+
+    #[test]
+    fn parse_json_file_rejects_non_json() {
+        let filepath = "Cargo.toml";
+        let parsed_filepath = parse_filepath(filepath).unwrap();
+        let parsed_json_contents = parse_json_file(&parsed_filepath, "detection rule");
+        assert!(parsed_json_contents.is_err());
+        assert!(
+            parsed_json_contents
+                .unwrap_err()
+                .contains("Error parsing detection rule file as JSON")
+        );
+    }
 }
