@@ -1,0 +1,31 @@
+{
+    "id": "Test::MissingStepOutputPropertyDependenciesRule",
+    "name": "Test Rule",
+    "description": "This is a test detection rule missing step output property dependencies.",
+    "version": "0.1.2",
+    "steps": [
+        {
+            "id": "list_s3_buckets",
+            "description": "List AWS S3 buckets in the eu-west-2 region.",
+            "requestType": "cli",
+            "request": {
+                "command": "aws",
+                "args": [
+                    "s3api",
+                    "list-buckets",
+                    "--region eu-west-2",
+                    "--output json"
+                ]
+            },
+            "outputs": [
+                {
+                    "id": "BucketArns",
+                    "description": "The ARNs of the S3 buckets.",
+                    "source": "{{ step.list_s3_buckets.response.body }}",
+                    "sourceFormat": "json",
+                    "parsingPattern": ".Buckets[].Arn"
+                }
+            ]
+        }
+    ]
+}

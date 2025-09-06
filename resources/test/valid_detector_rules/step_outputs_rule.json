@@ -1,0 +1,81 @@
+{
+    "id": "Test::StepInputsAndOutputsRule",
+    "name": "Test Rule",
+    "description": "This is a test detection rule with various types of step inputs and outputs.",
+    "version": "0.1.2",
+    "steps": [
+        {
+            "id": "list_dynamodb_tables",
+            "description": "List AWS DynamoDB tables in the given region.",
+            "requestType": "cli",
+            "request": {
+                "command": "aws",
+                "args": [
+                    "dynamodb",
+                    "list-tables",
+                    "--region {{ env.aws_region }}",
+                    "--output json"
+                ]
+            },
+            "outputs": [
+                {
+                    "id": "first_table_name",
+                    "description": "The name of the first returned DynamoDB table.",
+                    "source": "{{ step.list_dynamodb_tables.response }}",
+                    "sourceFormat": "json",
+                    "parsingMechanism": "jsonPath",
+                    "parsingPattern": ".TableNames[0]"
+                }
+            ]
+        },
+        {
+            "id": "get_table_continuous_backups_policy",
+            "description": "Get AWS DynamoDB table continuous backups policy.",
+            "requestType": "cli",
+            "request": {
+                "command": "aws",
+                "args": [
+                    "dynamodb",
+                    "describe-continuous-backups",
+                    "--table-name {{ step.list_dynamodb_tables.outputs.first_table_name }}",
+                    "--region {{ env.aws_region }}",
+                    "--output json"
+                ]
+            },
+            "outputs": [
+                {
+                    "id": "continuous_backup_status",
+                    "description": "The status for whether continuous backups are enabled, eg. \"ENABLED\".",
+                    "source": "{{ step.get_table_continuous_backups_policy.response }}",
+                    "sourceFormat": "json",
+                    "parsingMechanism": "jsonPath",
+                    "parsingPattern": ".ContinuousBackupsDescription.ContinuousBackupsStatus"
+                },
+                {
+                    "id": "point_in_time_recovery_enabled_status",
+                    "description": "Whether point in time backups are enabled, eg. \"ENABLED\".",
+                    "source": "{{ step.get_table_continuous_backups_policy.response }}",
+                    "sourceFormat": "json",
+                    "parsingMechanism": "jsonPath",
+                    "parsingPattern": ".ContinuousBackupsDescription.PointInTimeRecoveryDescription.PointInTimeRecoveryStatus"
+                },
+                {
+                    "id": "earliest_restorable_datetime",
+                    "description": "Earliest time the table can be restored to.",
+                    "source": "{{ step.get_table_continuous_backups_policy.response }}",
+                    "sourceFormat": "json",
+                    "parsingMechanism": "jsonPath",
+                    "parsingPattern": ".ContinuousBackupsDescription.PointInTimeRecoveryDescription.EarliestRestorableDateTime"
+                },
+                {
+                    "id": "earliest_restorable_date",
+                    "description": "Earliest date the table can be restored to.",
+                    "source": "{{ step.get_table_continuous_backups_policy.outputs.earliest_restorable_datetime }}",
+                    "sourceFormat": "text",
+                    "parsingMechanism": "regex",
+                    "parsingPattern": "^(\\d{4}-\\d{2}-\\d{2})"
+                }
+            ]
+        }
+    ]
+}

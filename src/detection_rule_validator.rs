@@ -325,8 +325,8 @@ mod tests {
                 {
                     "command": "aws",
                     "initialArgs": [
-                        "s3",
-                        "ls"
+                        "s3api",
+                        "list-buckets"
                     ]
                 },
                 {
@@ -346,6 +346,38 @@ mod tests {
         assert!(
             error_message.starts_with("Validation error: API request")
                 && error_message.contains("is not allowed by the request allow-list"),
+        );
+    }
+
+    #[test]
+    fn validate_detection_rule_data_rejects_invalid_parsing_props() {
+        let detection_rule_json: serde_json::Value = parse_json_from_filepath(
+            "resources/test/invalid_detector_rules/missing_step_output_property_dependencies.json",
+            "detection rule",
+        )
+        .unwrap();
+
+        let result = validate_detection_rule_data(&detection_rule_json, None);
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            "Validation error for detection rule: \"parsingMechanism\" is a required property"
+        );
+    }
+
+    #[test]
+    fn validate_detection_rule_data_passes_valid_step_inputs_outputs() {
+        let detection_rule_json: serde_json::Value = parse_json_from_filepath(
+            "resources/test/valid_detector_rules/step_outputs_rule.json",
+            "detection rule",
+        )
+        .unwrap();
+
+        let result = validate_detection_rule_data(&detection_rule_json, None);
+        assert!(
+            result.is_ok(),
+            "Unexpected validation error: {:?}",
+            result.unwrap_err()
         );
     }
 }

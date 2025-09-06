@@ -1,5 +1,5 @@
 {
-    "id": "Namespace::TestRuleWithUnsupportedProperties",
+    "id": "Test::RuleWithUnsupportedProperties",
     "name": "Test Rule",
     "description": "This is a test detection rule with unsupported properties.",
     "version": "0.1",

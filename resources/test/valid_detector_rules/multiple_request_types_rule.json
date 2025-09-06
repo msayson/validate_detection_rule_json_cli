@@ -1,5 +1,5 @@
 {
-    "id": "Namespace::TestMultipleRequestTypesRule",
+    "id": "Test::MultipleRequestTypesRule",
     "name": "Test Rule",
     "description": "This is a test detection rule including CLI and API requests.",
     "version": "0.1.2",
@@ -22,8 +22,8 @@
             "request": {
                 "command": "aws",
                 "args": [
-                    "s3",
-                    "ls",
+                    "s3api",
+                    "list-buckets",
                     "--region eu-west-2",
                     "--profile test-aws-detector"
                 ]

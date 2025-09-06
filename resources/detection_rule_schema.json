@@ -192,6 +192,10 @@
                     "description": "Step output identifier",
                     "type": "string"
                 },
+                "description": {
+                    "description": "Description of the output",
+                    "type": "string"
+                },
                 "source": {
                     "description": "Source of the output, eg. the response of a given step's request, or an environment variable",
                     "type": "string"
@@ -220,10 +224,15 @@
             "required": [
                 "id",
                 "source",
-                "sourceFormat",
-                "parsingMechanism",
-                "parsingPattern"
+                "sourceFormat"
             ],
+            "dependencies": {
+                "parsingPattern": {
+                    "required": [
+                        "parsingMechanism"
+                    ]
+                }
+            },
             "additionalProperties": false
         }
     }
