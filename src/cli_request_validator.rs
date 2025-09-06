@@ -317,4 +317,18 @@ mod tests {
             result.unwrap_err()
         );
     }
+
+    #[test]
+    fn validate_cli_request_rejects_if_no_cli_commands_allowed() {
+        let cli_request = serde_json::json!({
+            "command": "echo"
+        });
+        let allow_listed_cli_requests = None;
+        let result = validate_cli_request(&cli_request, allow_listed_cli_requests);
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            "Validation error: CLI command 'echo' is not allowed, no allow-listed CLI commands"
+        );
+    }
 }
