@@ -11,9 +11,9 @@ fn print_validation_errors(
     eprintln!("----");
     for error in validator.iter_errors(user_provided_json) {
         eprintln!("Error: {error}");
-        eprintln!("Instance path: {}", error.instance_path);
-        eprintln!("Schema path: {}", error.schema_path);
-        eprintln!("Keyword kind: {:?}", error.kind);
+        eprintln!("Instance path: {}", error.instance_path());
+        eprintln!("Schema path: {}", error.schema_path());
+        eprintln!("Keyword kind: {:?}", error.kind());
         eprintln!("----");
     }
 }
@@ -188,7 +188,7 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
-            "Validation error for detection rule: Additional properties are not allowed ('args' was unexpected)"
+            "Validation error for detection rule: \"method\" is a required property"
         );
     }
 
