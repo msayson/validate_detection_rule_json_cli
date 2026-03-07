@@ -222,7 +222,7 @@ mod tests {
         let input_args = vec![
             FIRST_ARG.to_string(),
             "file1.json".to_string(),
-            dir_path.to_string(),
+            dir_path.clone(),
         ];
         let result = parse_request_allow_list_json(&input_args);
         assert!(result.is_err());

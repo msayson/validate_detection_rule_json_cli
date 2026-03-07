@@ -28,14 +28,9 @@ fn validate_json_schema(
     let validator = jsonschema::validator_for(&schema_json)
         .map_err(|err| format!("Error creating {schema_type} validator: {err}"))?;
 
-    let validation_result = validator.validate(json_value);
-    if validation_result.is_err() {
+    if let Err(err) = validator.validate(json_value) {
         print_validation_errors(json_value, &validator);
-        return Err(format!(
-            "Validation error for {}: {}",
-            schema_type,
-            validation_result.unwrap_err()
-        ));
+        return Err(format!("Validation error for {schema_type}: {err}"));
     }
     Ok(())
 }
