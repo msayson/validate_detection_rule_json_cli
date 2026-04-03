@@ -27,3 +27,4 @@
 * `cargo fmt` reformats code to enforce the [Rust Style Guide](https://doc.rust-lang.org/stable/style-guide/), with support for project configurations
 * `cargo fmt --all -- --check` evaluates whether there is any code violating the [Rust Style Guide](https://doc.rust-lang.org/stable/style-guide/), failing if there are style violations without automatically reformatting the code
 * `cargo audit` evaluates whether dependencies imported via Cargo have reported vulnerabilities
+* `cargo update` updates dependencies while maintaining compatibility with specified direct dependency versions in Cargo.toml
